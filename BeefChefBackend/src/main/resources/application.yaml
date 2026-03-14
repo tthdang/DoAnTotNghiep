@@ -1,0 +1,25 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /beefchef
+
+spring:
+  application:
+    name: BeefChefBackend
+
+  datasource:
+    url: "jdbc:mysql://localhost:3307/beef_chef?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh"
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+jwt:
+  signerKey: "1TjXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
