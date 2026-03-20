@@ -21,14 +21,27 @@ public class SecurityConfig {
     private String signKey;
 
     private final String[] PUBLIC_ENDPOINT = {"/users",
-            "/auth/login", "/auth/introspect"
+            "/auth/login", "/auth/introspect",
+            //test
+            "/categories",
+            "/products"
+    };
+
+    private final String[] HOME_ENDPONT = {"/categories",
+            "/products"
+    };
+
+    private final String[] ADMIN_ENDPOINT = {"/users",
+            "/categories",
+            "/products"
     };
 
     @Bean
     public SecurityFilterChain fillerChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users")
+                        .requestMatchers(HttpMethod.GET, HOME_ENDPONT).permitAll()
+                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT)
                         .hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated());
 
