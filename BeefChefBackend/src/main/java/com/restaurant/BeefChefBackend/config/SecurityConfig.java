@@ -24,7 +24,9 @@ public class SecurityConfig {
             "/auth/login", "/auth/introspect",
             //test
             "/categories",
-            "/products"
+            "/products",
+            "/orders",
+            "/tables"
     };
 
     private final String[] HOME_ENDPONT = {"/categories",
