@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -30,6 +31,8 @@ public class OrderItems {
 
     @Enumerated(EnumType.STRING)
     private OrderItemStatus orderItemStatus;
+
+    private LocalDateTime orderItemCreatedAt;
 
 
 }

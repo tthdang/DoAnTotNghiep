@@ -2,6 +2,7 @@ package com.restaurant.BeefChefBackend.controller;
 
 import com.restaurant.BeefChefBackend.dto.request.ProductCreateRequest;
 import com.restaurant.BeefChefBackend.dto.request.ProductUpdateRequest;
+import com.restaurant.BeefChefBackend.dto.request.ProductUpdateStockRequest;
 import com.restaurant.BeefChefBackend.dto.response.ApiResponse;
 import com.restaurant.BeefChefBackend.dto.response.ProductResponse;
 import com.restaurant.BeefChefBackend.entity.Products;
@@ -47,5 +48,14 @@ public class ProductController {
     public String deleteProduct(@PathVariable Integer userId){
         service.deleteProduct(userId);
         return "Product has been deleted!";
+    }
+
+    //Get top 5 san pham ban chay
+    @GetMapping("/bestSeller")
+    public ApiResponse<List<ProductResponse>> getTop5Products(){
+        return ApiResponse.<List<ProductResponse>>builder()
+                .message("Lấy top 5 sản phẩm thành công!")
+                .result(service.getTop5Products())
+                .build();
     }
 }

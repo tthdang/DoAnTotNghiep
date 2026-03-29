@@ -24,14 +24,21 @@ public class SecurityConfig {
             "/auth/login", "/auth/introspect",
             //test
             "/categories",
-            "/products",
+            "/categories/{id}",
+            "/products/**",
+            "/products/stockAndStatus/{id}",
             "/orders",
-            "/tables"
+            "/orders/{orderId}",
+            "/tables",
+            "/orderItem",
+            "/orderItem/{orderItemId}"
     };
 
-    private final String[] HOME_ENDPONT = {"/categories",
-            "/products"
-    };
+//    private final String[] HOME_ENDPONT = {"/categories",
+//            "/products",
+//            "/orders/{orderId}",
+//            "/orderItem/{orderId}"
+//    };
 
     private final String[] ADMIN_ENDPOINT = {"/users",
             "/categories",
@@ -42,7 +49,9 @@ public class SecurityConfig {
     public SecurityFilterChain fillerChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.GET, HOME_ENDPONT).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINT).permitAll()
+                        .requestMatchers(HttpMethod.PUT, PUBLIC_ENDPOINT).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT)
                         .hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated());

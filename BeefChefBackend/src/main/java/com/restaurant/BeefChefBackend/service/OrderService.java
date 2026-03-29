@@ -1,13 +1,16 @@
 package com.restaurant.BeefChefBackend.service;
 
 import com.restaurant.BeefChefBackend.dto.request.OrderItemRequest;
+import com.restaurant.BeefChefBackend.dto.request.UpdateOrderRequest;
 import com.restaurant.BeefChefBackend.dto.response.ApiResponse;
 import com.restaurant.BeefChefBackend.dto.response.OrderItemResponse;
 import com.restaurant.BeefChefBackend.dto.response.OrderResponse;
 import com.restaurant.BeefChefBackend.entity.*;
 import com.restaurant.BeefChefBackend.enums.OrderItemStatus;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
+import com.restaurant.BeefChefBackend.enums.TableStatus;
 import com.restaurant.BeefChefBackend.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +37,11 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private ProductService productService;
 
-    private OrderResponse toResponse( Orders orders){
 
+    public OrderResponse toResponse( Orders orders){
         List<OrderItemResponse> itemResponses = orders.getItem().stream()
                 .map(item -> OrderItemResponse.builder()
                         .orderItemId(item.getOrderItemId())
@@ -46,6 +51,7 @@ public class OrderService {
                         .orderItemQuantity(item.getOrderItemQuantity())
                         .orderItemPrice(item.getOrderItemPrice())
                         .orderItemStatus(item.getOrderItemStatus())
+                        .orderItemCreatedAt(item.getOrderItemCreatedAt())
                         .build())
                 .collect(Collectors.toList());
 
@@ -55,7 +61,7 @@ public class OrderService {
                 .tableName(orders.getTable().getTableName())
                 .createdAt(orders.getCreatedAt())
                 .userId(orders.getUser().getUserId())
-                .userName(orders.getUser().getUserFirstname() + " " + orders.getUser().getUserLastname())
+                .userName(orders.getUser().getUserLastname() + " " + orders.getUser().getUserFirstname())
                 .orderStatus(orders.getOrderStatus())
                 .orderTotal(orders.getOrderTotal())
                 .orderCreatedAt(orders.getCreatedAt())
@@ -124,9 +130,10 @@ public class OrderService {
 //    }
 
     //create Order
+    @Transactional
     public OrderResponse createOrder(Integer userId, Integer tableId, List<OrderItemRequest> lists){
         Orders order = new Orders();
-        order.setOrderStatus(OrderStatus.ORDERING); //set trạng thái bàn
+        order.setOrderStatus(OrderStatus.ORDERING);
         order.setCreatedAt(LocalDateTime.now()); // set thoi gian tao order
 
         User user = userRepository.findById(userId).orElseThrow(
@@ -137,8 +144,9 @@ public class OrderService {
                 () -> new RuntimeException("Table not found!")
         );
 
-        List<OrderItems> orderItems = new ArrayList<>();
+        table.setTableStatus(TableStatus.OCCUPIED);//set trạng thái bàn
 
+        List<OrderItems> orderItems = new ArrayList<>();
         //Tao total
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItemRequest orderItemRequest : lists){
@@ -146,19 +154,21 @@ public class OrderService {
                     () -> new RuntimeException("Product " + orderItemRequest.getProductId() + " not found!")
             );
 
+            //update lại stock của product đã gọi
+            productService.decreaseStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
+
             OrderItems item = new OrderItems();
             item.setOrder(order);
             item.setProduct(product);
-
             item.setOrderItemQuantity(orderItemRequest.getQuantity());
             item.setOrderItemPrice(product.getProductPrice());
             item.setOrderItemStatus(OrderItemStatus.PENDING);
-
             //tinh tien
-            total = total.add(
-                    product.getProductPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()))
-            );
-
+            if (item.getOrderItemStatus() != OrderItemStatus.CANCEL) { //check status order item
+                total = total.add(
+                        product.getProductPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()))
+                );
+            }
             //add vao list
             orderItems.add(item);
         }
@@ -168,11 +178,7 @@ public class OrderService {
         order.setItem(orderItems);
         order.setOrderTotal(total);
 
-
-
-
         Orders save = orderRepository.save(order);
-
 
         return toResponse(save);
     }
@@ -185,7 +191,39 @@ public class OrderService {
     }
 
     //add them order item moi
-    public void addOrderItem(Integer orderId, List<OrderItemRequest> list){
+    //    public void addOrderItem(Integer orderId, List<OrderItemRequest> list){
+//        Orders order = getOrder(orderId);
+//
+//        if (order.getOrderStatus() == OrderStatus.PAID) {
+//            throw new IllegalStateException("Không thể thêm món: order đã thanh toán!");
+//        }
+//
+//        BigDecimal addTotal = BigDecimal.ZERO;
+//
+//        for (OrderItemRequest request : list){
+//            Products product = productRepository.findById(request.getProductId()).orElseThrow(
+//                    () -> new RuntimeException("Product " + request.getProductId() + " not found!")
+//            );
+//
+//            OrderItems item = new OrderItems();
+//            item.setOrder(order);
+//            item.setProduct(product);
+//            item.setOrderItemQuantity(request.getQuantity());
+//            item.setOrderItemPrice(product.getProductPrice());
+//            item.setOrderItemStatus(OrderItemStatus.PENDING);
+//            addTotal = addTotal.add(
+//                    product.getProductPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
+//            );
+//
+//            orderItemRepository.save(item);
+//            order.getItem().add(item);
+//        }
+//
+//        order.setOrderTotal(order.getOrderTotal().add(addTotal));
+//        orderRepository.save(order);
+//    }
+
+    public OrderResponse addOrderItem(Integer orderId, List<OrderItemRequest> list) {
         Orders order = getOrder(orderId);
 
         if (order.getOrderStatus() == OrderStatus.PAID) {
@@ -194,11 +232,13 @@ public class OrderService {
 
         BigDecimal addTotal = BigDecimal.ZERO;
 
-
-        for (OrderItemRequest request : list){
+        for (OrderItemRequest request : list) {
             Products product = productRepository.findById(request.getProductId()).orElseThrow(
                     () -> new RuntimeException("Product " + request.getProductId() + " not found!")
             );
+
+            //update lại stock của product đã gọi
+            productService.decreaseStock(request.getProductId(), request.getQuantity());
 
             OrderItems item = new OrderItems();
             item.setOrder(order);
@@ -206,20 +246,34 @@ public class OrderService {
             item.setOrderItemQuantity(request.getQuantity());
             item.setOrderItemPrice(product.getProductPrice());
             item.setOrderItemStatus(OrderItemStatus.PENDING);
+
             addTotal = addTotal.add(
                     product.getProductPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
             );
 
+            item.setOrderItemCreatedAt(LocalDateTime.now());
+
             orderItemRepository.save(item);
             order.getItem().add(item);
-
-
         }
-
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
-        orderRepository.save(order);
+        Orders updatedOrder = orderRepository.save(order);
 
+        return toResponse(updatedOrder);
     }
 
+    public OrderResponse updateOrderStatus(Integer id, UpdateOrderRequest request){
+        Orders order = getOrder(id);
+        boolean checkStatusOrderItem = order.getItem().stream()
+                .filter(i -> i.getOrderItemStatus() != OrderItemStatus.CANCEL)
+                .allMatch(i -> i.getOrderItemStatus() == OrderItemStatus.SERVED);
+        if(checkStatusOrderItem){
+            order.setOrderStatus(request.getOrderStatus());
+        }
+
+        Orders save = orderRepository.save(order);
+        return toResponse(save);
+
+    }
 
 }

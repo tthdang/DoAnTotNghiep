@@ -23,7 +23,8 @@ public class Products {
     private ProductStatus productStatus;
     private String productImage;
     private String productDescription;
-
+    private Integer productStock;
+    private Integer productSold;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Categories category;
