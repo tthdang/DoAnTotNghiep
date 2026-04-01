@@ -11,6 +11,6 @@ import java.util.List;
 @Builder
 public class OrderCreateRequest {
     private Integer tableId;
-    private Integer userId;
+    private String userPhone;
     private List<OrderItemRequest> items;
 }

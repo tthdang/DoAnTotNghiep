@@ -41,10 +41,16 @@ public class OrderController {
     @PostMapping()
     public ApiResponse<OrderResponse> createOrder(@RequestBody OrderCreateRequest request){
 
-        return ApiResponse.<OrderResponse>builder()
-                .result(orderService.createOrder(request.getUserId(), request.getTableId(), request.getItems()))
-                .message("Order create successfully!")
-                .build();
+        try {
+            return ApiResponse.<OrderResponse>builder()
+                    .result(orderService.createOrder(request.getUserPhone(), request.getTableId(), request.getItems()))
+                    .message("Order create successfully!")
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Lỗi khi xếp bàn!")
+                    .build();
+        }
     }
 
     //goi them mon
@@ -92,5 +98,20 @@ public class OrderController {
                     .build();
         }
 
+    }
+
+    //paid order
+    @PutMapping("/{orderId}/paid")
+    public ApiResponse<OrderResponse> paidOrder(@PathVariable Integer orderId){
+        try{
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Thanh toán thành công!")
+                    .result(orderService.paidOrder(orderId))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Thanh toán thất bại!" + e.getMessage())
+                    .build();
+        }
     }
 }

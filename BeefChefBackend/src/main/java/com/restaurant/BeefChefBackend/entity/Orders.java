@@ -39,6 +39,8 @@ public class Orders {
 
     private BigDecimal orderTotal;
 
+    private LocalDateTime paidAt;
+
     @ManyToOne
     @JoinColumn(name = "shiftId")
     private Shift shift;

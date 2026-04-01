@@ -1,5 +1,6 @@
 package com.restaurant.BeefChefBackend.dto.response;
 
+import com.restaurant.BeefChefBackend.entity.Shift;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,5 +25,7 @@ public class OrderResponse {
     private OrderStatus orderStatus;
     private BigDecimal orderTotal;
     private LocalDateTime orderCreatedAt;
+    private Shift shift;
+    private LocalDateTime paidAt;
     private List<OrderItemResponse> items;
 }

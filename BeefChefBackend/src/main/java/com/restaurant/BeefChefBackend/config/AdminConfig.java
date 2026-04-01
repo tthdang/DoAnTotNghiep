@@ -1,9 +1,11 @@
 package com.restaurant.BeefChefBackend.config;
 
 
+import com.restaurant.BeefChefBackend.entity.Ranks;
 import com.restaurant.BeefChefBackend.entity.User;
 import com.restaurant.BeefChefBackend.enums.Roles;
 import com.restaurant.BeefChefBackend.repository.UserRepository;
+import com.restaurant.BeefChefBackend.service.RankService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -20,16 +22,22 @@ public class AdminConfig {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RankService rankService;
+
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository){
         return args -> {
             if(userRepository.findByUserPhone("admin").isEmpty()){
                 var role = new HashSet<String>();
                 role.add(Roles.ADMIN.name());
+                Ranks rank = rankService.getRankById(5);
                 User admin = User.builder()
                         .userPhone("admin")
                         .userPassword(passwordEncoder.encode("admin"))
                         .userRole(role)
+                        .userPoint(100000L)
+                        .rank(rank)
                         .build();
                 userRepository.save(admin);
                 log.warn("Admin user has been created with default password: admin. PLease change it!");

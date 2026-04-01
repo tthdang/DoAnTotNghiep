@@ -2,8 +2,10 @@ package com.restaurant.BeefChefBackend.service;
 
 import com.restaurant.BeefChefBackend.dto.request.UserCreateRequest;
 import com.restaurant.BeefChefBackend.dto.request.UserUpdateRequest;
+import com.restaurant.BeefChefBackend.entity.Ranks;
 import com.restaurant.BeefChefBackend.entity.User;
 import com.restaurant.BeefChefBackend.enums.Roles;
+import com.restaurant.BeefChefBackend.repository.RankRepository;
 import com.restaurant.BeefChefBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +20,9 @@ public class UserService {
 
     @Autowired
     public UserRepository userRepository;
+
+    @Autowired
+    private RankRepository rankRepository;
 
     //tạo user mới
     public User createUser (UserCreateRequest request){
@@ -37,7 +42,11 @@ public class UserService {
         role.add(Roles.USER.name());
         user.setUserRole(role);
         user.setUserGender(request.getUserGender());
+        //gan rank
+        Ranks rank = rankRepository.findByRankMinPoint(0L)
+                .orElseThrow(() -> new RuntimeException("Rank not found!"));
 
+        user.setRank(rank);
         return userRepository.save(user);
     }
 
@@ -73,6 +82,15 @@ public class UserService {
     //Del user
     public void deleteUser(Integer id){
         userRepository.deleteById(id);
+    }
 
+    //capt nhat lai rank cho user
+    public void updateRankForUser(User user){
+        List<Ranks> listRanks = rankRepository.findAll();
+        for(Ranks r : listRanks){
+            if(user.getUserPoint() >= r.getRankMinPoint() ){
+                user.setRank(r);
+            }
+        }
     }
 }

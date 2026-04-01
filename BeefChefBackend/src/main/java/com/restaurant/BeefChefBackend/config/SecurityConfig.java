@@ -20,18 +20,21 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String signKey;
 
-    private final String[] PUBLIC_ENDPOINT = {"/users",
+    private final String[] PUBLIC_ENDPOINT = {"/users/**",
             "/auth/login", "/auth/introspect",
             //test
             "/categories",
             "/categories/{id}",
             "/products/**",
             "/products/stockAndStatus/{id}",
-            "/orders",
+            "/orders/**",
             "/orders/{orderId}",
             "/tables",
             "/orderItem",
-            "/orderItem/{orderItemId}"
+            "/orderItem/{orderItemId}",
+            "/shift/**",
+            "/report/**",
+            "/rank/**"
     };
 
 //    private final String[] HOME_ENDPONT = {"/categories",

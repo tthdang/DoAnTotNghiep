@@ -40,6 +40,12 @@ public class OrderService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ShiftService shiftService;
+
 
     public OrderResponse toResponse( Orders orders){
         List<OrderItemResponse> itemResponses = orders.getItem().stream()
@@ -66,6 +72,8 @@ public class OrderService {
                 .orderTotal(orders.getOrderTotal())
                 .orderCreatedAt(orders.getCreatedAt())
                 .items(itemResponses)
+                .shift(orders.getShift())
+                .paidAt(orders.getPaidAt())
                 .build();
     }
 //
@@ -131,18 +139,25 @@ public class OrderService {
 
     //create Order
     @Transactional
-    public OrderResponse createOrder(Integer userId, Integer tableId, List<OrderItemRequest> lists){
+    public OrderResponse createOrder(String userPhone, Integer tableId, List<OrderItemRequest> lists){
         Orders order = new Orders();
         order.setOrderStatus(OrderStatus.ORDERING);
         order.setCreatedAt(LocalDateTime.now()); // set thoi gian tao order
 
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException("User Phone: " + userId + " not found!")
+        Shift shift = shiftService.getCurrentShift();
+        order.setShift(shift);
+
+        User user = userRepository.findByUserPhone(userPhone).orElseThrow(
+                () -> new RuntimeException("User Phone: " + userPhone + " not found!")
         );
 
         Tables table = tableRepository.findById(tableId).orElseThrow(
                 () -> new RuntimeException("Table not found!")
         );
+
+        if(table.getTableStatus() == TableStatus.OCCUPIED){
+            throw  new IllegalStateException("Bàn đã được sử dụng hoặc đặt không thể xếp được");
+        }
 
         table.setTableStatus(TableStatus.OCCUPIED);//set trạng thái bàn
 
@@ -191,37 +206,6 @@ public class OrderService {
     }
 
     //add them order item moi
-    //    public void addOrderItem(Integer orderId, List<OrderItemRequest> list){
-//        Orders order = getOrder(orderId);
-//
-//        if (order.getOrderStatus() == OrderStatus.PAID) {
-//            throw new IllegalStateException("Không thể thêm món: order đã thanh toán!");
-//        }
-//
-//        BigDecimal addTotal = BigDecimal.ZERO;
-//
-//        for (OrderItemRequest request : list){
-//            Products product = productRepository.findById(request.getProductId()).orElseThrow(
-//                    () -> new RuntimeException("Product " + request.getProductId() + " not found!")
-//            );
-//
-//            OrderItems item = new OrderItems();
-//            item.setOrder(order);
-//            item.setProduct(product);
-//            item.setOrderItemQuantity(request.getQuantity());
-//            item.setOrderItemPrice(product.getProductPrice());
-//            item.setOrderItemStatus(OrderItemStatus.PENDING);
-//            addTotal = addTotal.add(
-//                    product.getProductPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
-//            );
-//
-//            orderItemRepository.save(item);
-//            order.getItem().add(item);
-//        }
-//
-//        order.setOrderTotal(order.getOrderTotal().add(addTotal));
-//        orderRepository.save(order);
-//    }
 
     public OrderResponse addOrderItem(Integer orderId, List<OrderItemRequest> list) {
         Orders order = getOrder(orderId);
@@ -261,7 +245,7 @@ public class OrderService {
 
         return toResponse(updatedOrder);
     }
-
+    //update trạng thái order
     public OrderResponse updateOrderStatus(Integer id, UpdateOrderRequest request){
         Orders order = getOrder(id);
         boolean checkStatusOrderItem = order.getItem().stream()
@@ -269,6 +253,8 @@ public class OrderService {
                 .allMatch(i -> i.getOrderItemStatus() == OrderItemStatus.SERVED);
         if(checkStatusOrderItem){
             order.setOrderStatus(request.getOrderStatus());
+        }else{
+            throw new IllegalStateException("Tất cả các orderItem liên quan chưa được mang ra bàn!");
         }
 
         Orders save = orderRepository.save(order);
@@ -276,4 +262,37 @@ public class OrderService {
 
     }
 
+    //Pay order
+    public OrderResponse paidOrder(Integer id){
+        Orders order = getOrder(id);
+        if(order.getOrderStatus() == OrderStatus.PAID){
+            throw new IllegalStateException("Hoá đơn đã được thanh toán rồi!");
+        }
+
+        if(order.getOrderStatus() != OrderStatus.SERVED){
+            throw new IllegalStateException("Order chưa được hoàn thành tât cả các món thì không được thanh toán!");
+        }
+        order.setOrderStatus(OrderStatus.PAID);
+        order.setPaidAt(LocalDateTime.now());
+        Orders save = orderRepository.save(order);
+
+        //cong diem va cap nhat lai diem/rank cho user
+        User user = save.getUser();
+        if(user != null){
+            BigDecimal orderTotal = save.getOrderTotal();
+
+            //xy ly 1000k = 1d
+            int earnedPoint = orderTotal
+                    .divide(BigDecimal.valueOf(10000))
+                    .intValue();
+
+            user.setUserPoint(user.getUserPoint() + earnedPoint);
+            userService.updateRankForUser(user);
+            userRepository.save(user);
+        }
+
+
+
+        return toResponse(save);
+    }
 }

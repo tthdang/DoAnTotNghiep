@@ -29,4 +29,8 @@ public class User {
     private LocalDate userDoB;
     private Set<String> userRole;
     private long userPoint;
+
+    @ManyToOne
+    @JoinColumn(name = "rank_id")
+    private Ranks rank;
 }
