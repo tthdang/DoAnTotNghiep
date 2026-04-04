@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Xác nhận bàn - BeefChef</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="css/confirmTable.css" rel="stylesheet" />
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <a class="nav-logo" href="#"><span>Beef</span>Chef</a>
+    </nav>
+
+    <div class="confirmTable">
+        <div class="form-title">Gọi món tại bàn</div>
+        <div class="form-title" style="font-size:1.6rem; margin-top:-10px;">Chào mừng bạn đến với Beef Chef</div>
+        <p class="form-sub">Vui lòng xác nhận thông tin bàn của bạn</p>
+
+        <!-- Phần chọn bàn từ API -->
+        <div class="select-wrap">
+            <label>Tên bàn</label>
+            <select class="form-select" id="tableSelect" required>
+                <option value="">Đang tải danh sách bàn...</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Số điện thoại</label>
+            <input type="tel" placeholder="096xxxxxxx" id="phone">
+        </div>
+
+        <button class="btn-order" onclick="confirmOrder()">XÁC NHẬN GỌI MÓN</button>
+    </div>
+
+    <script src="js/confirmTable.js"></script>
+</body>
+</html>

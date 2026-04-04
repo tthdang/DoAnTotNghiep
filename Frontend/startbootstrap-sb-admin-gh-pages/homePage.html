@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BeefChef – Fine Dining & Grill</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<link href="css/homePage.css" rel="stylesheet" />
+
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#"><span>Beef</span>Chef</a>
+  <ul class="nav-links">
+    <li><a href="#hero">Trang chủ</a></li>
+    <li><a href="#menu">Thực đơn</a></li>
+    <li><a href="#booking">Đặt bàn</a></li>
+    <li><a href="confirmTable.html">Gọi món tại bàn</a></li>
+  </ul>
+
+  <!-- Login và Register -->
+    <div id="authButtons">
+        <button class="btn-ghost" onclick="window.location.href='login.html'">Đăng nhập</button>
+        <button class="btn-primary" onclick="window.location.href='register.html'">Đăng ký</button>
+    </div>
+
+    <div id="userMenu" style="display: none;">
+        <span id="welcomeUser"></span>
+        <div class="dropdown">
+            <span class="arrow">▼</span>
+            <div class="dropdown-content">
+            <a href="profile.html">Thông tin</a>
+            <a href="#" onclick="logout()">Đăng xuất</a>
+            </div>
+        </div>
+    </div>
+
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <span class="hero-badge">★ Fine Dining & Premium Grill ★</span>
+  <h1 class="hero-title">The Art of<br><em>Beef</em> &amp; Fire</h1>
+  <p class="hero-sub">Trải nghiệm ẩm thực bò thượng hạng — được nướng hoàn hảo từng miếng</p>
+  <div class="hero-ctas">
+    <button class="btn-hero-main" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Xem Thực Đơn</button>
+    <button class="btn-hero-sec" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Đặt Bàn Ngay</button>
+  </div>
+  <div class="hero-ornament">
+    <span>Khám phá</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="menu-header">
+    <span class="section-label">✦ Thực đơn của chúng tôi</span>
+    <h2 class="section-title">Tinh hoa từng món ăn</h2>
+    <div class="divider"></div>
+    <p style="color:var(--muted);max-width:500px;margin:0 auto;font-size:.9rem;line-height:1.7;">
+      Mỗi món được chọn lọc kỹ càng từ nguyên liệu thượng hạng, chế biến bởi đội ngũ đầu bếp chuyên nghiệp.
+    </p>
+  </div>
+
+  <!--Danh mục -->
+  <div class="category-tabs" id="categoryTabs"></div>
+
+    <!--Danh sách món ăn -->
+  <div class="menu-grid" id="menuGrid"></div>
+</section>
+
+<!-- BOOKING -->
+<section id="booking">
+  <div class="booking-inner">
+    <div class="booking-info">
+      <span class="section-label">✦ Đặt bàn trước</span>
+      <h2 class="section-title">Dành riêng<br>cho bạn</h2>
+      <div class="divider"></div>
+      <p>Để có trải nghiệm tốt nhất, hãy đặt bàn trước để chúng tôi chuẩn bị cho bữa ăn hoàn hảo của bạn.</p>
+      <div class="info-row"><span class="info-icon">📍</span><span class="info-text">TDP Hồ Bình, Hoà Bình, Hải Phòng</span></div>
+      <div class="info-row"><span class="info-icon">📞</span><span class="info-text">0968 425 403</span></div>
+      <div class="info-row"><span class="info-icon">🕐</span><span class="info-text">10:00 – 14:00 & 18:00 - 22:00 hàng ngày</span></div>
+    </div>
+    <div class="booking-form">
+      <div class="form-title">Đặt Bàn</div>
+      <div class="form-sub">Điền thông tin để giữ chỗ ngay hôm nay</div>
+      <div class="form-group">
+        <label>Họ và tên</label>
+        <input type="text" placeholder="Nguyễn Văn A" id="bk-name"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số điện thoại</label>
+          <input type="tel" placeholder="0901 234 567" id="bk-phone"/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="email@gmail.com" id="bk-email"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày</label>
+          <input type="date" id="bk-date"/>
+        </div>
+        <div class="form-group">
+          <label>Giờ</label>
+          <select id="bk-time">
+            <option>10:00</option><option>11:00</option><option>12:00</option>
+            <option>13:00</option><option>14:00</option><option>17:00</option>
+            <option>18:00</option><option>19:00</option><option>20:00</option><option>21:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Số lượng khách</label>
+        <select id="bk-guests">
+          <option>1 khách</option><option>2 khách</option><option>3 khách</option>
+          <option>4 khách</option><option>5 khách</option><option>6+ khách</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="table-label">Chọn bàn (tuỳ chọn)</span>
+        <div class="table-selector" id="tableSelector"></div>
+      </div>
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <textarea rows="3" placeholder="Yêu cầu đặc biệt (dị ứng, dịp kỷ niệm...)" id="bk-note" style="resize:none"></textarea>
+      </div>
+      <button class="form-submit" onclick="submitBooking()">Xác Nhận Đặt Bàn</button>
+      <div class="success-msg" id="bookingSuccess">✓ Đặt bàn thành công! Chúng tôi sẽ liên hệ xác nhận sớm.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">BeefChef</span>
+  <p class="footer-tagline">Fine Dining & Premium Grill</p>
+  <div class="footer-links">
+    <a href="#hero">Trang chủ</a>
+    <a href="#menu">Thực đơn</a>
+    <a href="#booking">Đặt bàn</a>
+    <a href="#" onclick="openModal('login')">Đăng nhập</a>
+  </div>
+  <p class="footer-copy">© 2025 BeefChef Restaurant. All rights reserved.</p>
+</footer>
+
+
+
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login')">✕</button>
+    <div class="modal-title">Chào mừng<br>trở lại</div>
+    <div class="modal-sub">Đăng nhập để quản lý đặt bàn và gọi món</div>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="email@gmail.com" id="l-email"/></div>
+    <div class="form-group"><label>Mật khẩu</label><input type="password" placeholder="••••••••" id="l-pass"/></div>
+    <button class="form-submit" onclick="handleLogin()">Đăng Nhập</button>
+    <div class="modal-switch">Chưa có tài khoản? <a onclick="switchModal('login','register')">Đăng ký ngay</a></div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="overlay" id="registerOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('register')">✕</button>
+    <div class="modal-title">Tạo tài<br>khoản mới</div>
+    <div class="modal-sub">Đăng ký để nhận ưu đãi thành viên độc quyền</div>
+    <div class="form-row">
+      <div class="form-group"><label>Họ</label><input type="text" placeholder="Nguyễn" id="r-last"/></div>
+      <div class="form-group"><label>Tên</label><input type="text" placeholder="Văn A" id="r-first"/></div>
+    </div>
+    <div class="form-group"><label>Số điện thoại</label><input type="tel" placeholder="0901 234 567" id="r-phone"/></div>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="email@gmail.com" id="r-email"/></div>
+    <div class="form-group"><label>Mật khẩu</label><input type="password" placeholder="Tối thiểu 8 ký tự" id="r-pass"/></div>
+    <button class="form-submit" onclick="handleRegister()">Tạo Tài Khoản</button>
+    <div class="modal-switch">Đã có tài khoản? <a onclick="switchModal('register','login')">Đăng nhập</a></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="js/menu.js"></script>
+</body>
+</html>

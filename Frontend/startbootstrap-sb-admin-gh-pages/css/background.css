@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --red:           #CC1F1F;
+  --red-hover:     #E02222;
+  --gold:          #C8A84B;
+  --gold-light:    #E0C068;
+  --gold-dim:      #9A7E36;
+
+  --bg:            #111009;
+  --bg-card:       #1A1812;
+  --bg-card-hover: #1F1D15;
+  --bg-elevated:   #252218;
+  --bg-nav:        #0D0C08;
+  --bg-overlay:    rgba(0,0,0,0.75);
+
+  --border:        rgba(200,168,75,0.15);
+  --border-strong: rgba(200,168,75,0.35);
+
+  --text-primary:  #F5EFE0;
+  --text-secondary:#A89878;
+  --text-muted:    #6A5E48;
+  --text-gold:     #C8A84B;
+  --text-label:    #7A6E58;
+
+  --status-pending:   #C8A84B;
+  --status-confirmed: #4CAF50;
+  --status-cooking:   #FF9800;
+  --status-ready:     #2196F3;
+  --status-served:    #9C27B0;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Montserrat', 'Segoe UI', sans-serif;
+
+  --sp-xs: 4px;  --sp-sm: 8px;  --sp-md: 16px;
+  --sp-lg: 24px; --sp-xl: 40px; --sp-2xl: 64px;
+
+  --r-xs: 2px; --r-sm: 4px; --r-md: 6px; --r-lg: 10px;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.6);
+  --shadow-gold: 0 0 24px rgba(200,168,75,0.12);
+
+  --t-fast:   0.15s ease;
+  --t-normal: 0.25s ease;
+  --t-slow:   0.4s cubic-bezier(0.4,0,0.2,1);
+
+  --z-nav:    100;
+  --z-drawer: 200;
+  --z-modal:  300;
+  --z-toast:  400;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+img  { max-width: 100%; display: block; object-fit: cover; }
+a    { text-decoration: none; color: inherit; }
+button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; background: transparent; }
+input, select, textarea { font-family: var(--font-body); outline: none; }
+ul, ol { list-style: none; }
+
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+.label-gold {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+}

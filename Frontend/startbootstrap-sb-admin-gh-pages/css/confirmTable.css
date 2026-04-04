@@ -1,0 +1,215 @@
+:root {
+    --black: #0a0806;
+    --deep: #120e0a;
+    --charcoal: #1e1810;
+    --gold: #c9a84c;
+    --gold-lt: #e8c97a;
+    --red: #8b1a1a;
+    --cream: #f5ede0;
+    --muted: #9a8a76;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--black);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* NAV */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 25px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: .05em;
+    color: var(--gold);
+    text-decoration: none;
+    
+}
+
+.nav-logo span {
+    color: var(--red);
+    
+}
+
+/* MAIN CONTAINER */
+.confirmTable {
+    width: 100%;
+    max-width: 520px;
+    background: var(--deep);
+    border: 1px solid rgba(201, 168, 76, 0.25);
+    border-radius: 16px;
+    padding: 60px 50px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    position: relative;
+}
+
+/* TITLE */
+.form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--cream);
+}
+
+.form-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin-bottom: 50px;
+}
+
+/* Danh sách bàn */
+
+.select-wrap {
+    margin-bottom: 28px;
+    position: relative;
+}
+
+.select-wrap label {
+    display: block;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.form-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--cream);
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.3s;
+}
+
+/* Icon mũi tên dropdown */
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c9a84c' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5L3 6.5 13 6.5 8 11.5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+}
+
+.form-select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+.form-select option {
+    background: var(--deep);
+    color: var(--cream);
+    padding: 12px;
+}
+
+/* Số điện thoại */
+.input-group {
+    margin-bottom: 28px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--cream);
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+/* BUTTON */
+.btn-order {
+    width: 100%;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    padding: 18px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s;
+}
+
+.btn-order:hover {
+    background: var(--gold-lt);
+    transform: translateY(-3px);
+}
+
+/* DECORATIVE RED LINE */
+.confirmTable::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 3px;
+    background: var(--red);
+    border-radius: 2px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .confirmTable {
+        margin: 20px;
+        padding: 30px 30px;
+    }
+    
+    .form-title {
+        font-size: 1.8rem;
+    }
+}
