@@ -25,8 +25,8 @@ async function loadTables() {
         
         availableTables.forEach(table => {
             const option = document.createElement("option");
-            option.value = table.tableName;   // hoặc table.tableId nếu backend dùng ID
-            option.textContent = `Bàn ${table.tableName} - Còn trống`;
+            option.value = table.tableId;   
+            option.textContent = `${table.tableName} - Còn trống`;
             select.appendChild(option);
         });
     } catch (error) {
@@ -35,7 +35,7 @@ async function loadTables() {
     }
 }
 
-// ==================== HÀM XÁC NHẬN ====================
+// xác nhận số điện thoại cùng bàn
 async function confirmOrder() {
     const tableSelect = document.getElementById("tableSelect");
     const phoneInput = document.getElementById("phone");
@@ -47,79 +47,63 @@ async function confirmOrder() {
         alert("Vui lòng chọn bàn!");
         return;
     }
+
     if (!phone) {
-        alert("Vui lòng nhập số điện thoại!");
+        alert("Vui lòng chọn bànnhập đầy đủ số điện thoại!");
         return;
     }
 
-    // Tìm nút để disable (tránh click nhiều lần)
     const btn = document.querySelector(".btn-order");
     const originalText = btn.textContent;
-
     btn.disabled = true;
     btn.textContent = "Đang xử lý...";
 
     try {
         const response = await fetch('http://localhost:8081/beefchef/orders', {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                // Nếu backend có JWT hoặc token, thêm dòng này sau:
-                // "Authorization": "Bearer " + (localStorage.getItem("token") || "")
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                tableId: tableId,      // hoặc tableName tùy backend
+                tableId: parseInt(tableId),
                 userPhone: phone,
                 items: []
             })
         });
 
-        // Đọc response đúng cách
-        let orderData;
-        const contentType = response.headers.get("content-type");
-
-        if (response.ok) {
-            if (contentType && contentType.includes("application/json")) {
-                orderData = await response.json();
-            } else {
-                // Một số trường hợp server trả text thành công
-                const text = await response.text();
-                console.log("Response text:", text);
-                orderData = { orderId: "unknown" }; // fallback
-            }
-        } else {
-            // Xử lý lỗi 401, 404, 400...
-            let errorMsg = `Lỗi ${response.status}`;
-            try {
-                const errorJson = await response.json();
-                errorMsg += ` - ${errorJson.message || errorJson.error || ''}`;
-            } catch (e) {
-                const errorText = await response.text();
-                errorMsg += ` - ${errorText.substring(0, 200)}`;
-            }
-            throw new Error(errorMsg);
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err || `Lỗi ${response.status}`);
         }
 
-        // Lưu thông tin order
+        const data = await response.json();
+
+        // Lưu toàn bộ thông tin order vào localStorage
         localStorage.setItem("currentOrder", JSON.stringify({
-            orderId: orderData.orderId || orderData.id || "temp-order",
-            tableId: tableId,
-            customerPhone: phone,
-            items: []
+            orderId: data.result.orderId,
+            tableId: data.result.tableId,
+            tableName: data.result.tableName,
+            userId: data.result.userId,
+            userName: data.result.userName,
+            orderStatus: data.result.orderStatus,
+            orderTotal: data.result.orderTotal,
+            shift: data.result.shift,
+            createdAt: data.result.createdAt,
+            items: data.result.items || []
         }));
 
-        console.log('Tạo order thành công cho bàn:', tableId);
-        alert("Tạo order thành công! Chuyển đến trang gọi món...");
+        console.log("Order đã lưu:", data.result);
 
+        alert(`Tạo order thành công!\nBàn: ${data.result.tableName}\nOrder ID: #${data.result.orderId}`);
+        
+        // Chuyển trang sau 800ms
         setTimeout(() => {
             window.location.href = "order.html";
         }, 800);
 
     } catch (error) {
-        console.error("Lỗi confirmOrder:", error);
-        alert("Có lỗi xảy ra:\n" + error.message);
+        console.error("Lỗi:", error);
+        alert("Có lỗi xảy ra: " + error.message);
+        window.location.href = "404.html"
     } finally {
-        // Reset nút
         btn.disabled = false;
         btn.textContent = originalText;
     }
