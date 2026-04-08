@@ -1,0 +1,488 @@
+// ==================== CONFIG ====================
+const API_BASE = "http://localhost:8081/beefchef";
+const PRODUCTS_API = `${API_BASE}/products`;
+const CATEGORIES_API = `${API_BASE}/categories`;
+
+// ==================== BIẾN TOÀN CỤC ====================
+let menuData = [];
+let categories = [];
+let cart = [];
+let orderStatusInterval = null;   // ← Đã có sẵn, giữ nguyên
+const POLLING_INTERVAL = 3000;    // 3 giây (có thể chỉnh)
+// ==================== FORMAT GIÁ ====================
+function fmt(price) {
+    return price.toLocaleString('vi-VN') + 'đ';
+}
+
+// ==================== TẠO SLUG ====================
+function createSlug(str) {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '');
+}
+
+// ==================== LOAD DATA ====================
+async function loadAllData() {
+    try {
+        // Load danh mục
+        const catRes = await fetch(CATEGORIES_API);
+        if (!catRes.ok) throw new Error("Lỗi load danh mục");
+        categories = await catRes.json();
+
+        // Load sản phẩm
+        const prodRes = await fetch(PRODUCTS_API);
+        if (!prodRes.ok) throw new Error("Lỗi load sản phẩm");
+        
+        let products = await prodRes.json();
+        products = products.filter(p => p.productStatus === 'AVAILABLE');
+
+        menuData = products.map(p => {
+            const catName = p.category?.categoryName?.trim() || "Khác";
+            const slug = createSlug(catName);
+
+            return {
+                id: p.productId,
+                cat: slug,
+                catLabel: catName,
+                name: p.productName,
+                desc: p.productDescription || "Đang cập nhật mô tả...",
+                price: p.productPrice,
+                stock: p.productStock,
+                img: p.productImage || "https://via.placeholder.com/600x400?text=No+Image"
+            };
+        });
+
+        renderCategoryTabs();
+        renderMenu('all');
+
+    } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+        alert("Không thể tải thực đơn!");
+    }
+}
+
+// ==================== RENDER TABS ====================
+function renderCategoryTabs() {
+    const container = document.getElementById('categoryTabs');
+    if (!container) {
+        console.error("Không tìm thấy Danh mục");
+        return;
+    }
+
+    let html = `<button class="tab-btn active" onclick="filterMenu('all', this)">Tất cả</button>`;
+
+    categories.forEach(cat => {
+        const slug = createSlug(cat.categoryName);
+        html += `
+            <button class="tab-btn" onclick="filterMenu('${slug}', this)">
+                ${cat.categoryName}
+            </button>`;
+    });
+
+    container.innerHTML = html;
+}
+
+// ==================== RENDER MENU ====================
+function renderMenu(filter = 'all') {
+    const container = document.getElementById('menuGrid');
+    if (!container) return;
+
+    let filtered = menuData;
+
+    if (filter !== 'all') {
+        filtered = menuData.filter(item => item.cat === filter);
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--muted);">
+                <h3>Chưa có món ăn nào trong danh mục này</h3>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+        <div class="menu-card">
+            <div class="menu-card-img-wrap">
+                <img class="menu-card-img" src="${item.img}" alt="${item.name}" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+                <div class="menu-card-cat">${item.catLabel}</div>
+                <div class="menu-card-name">${item.name}</div>
+                <div class="menu-card-desc">${item.desc}</div>
+                <div class="menu-card-stock">Còn lại: ${item.stock}</div>
+                
+                <div class="menu-card-footer">
+                    <span class="menu-price">${fmt(item.price)}</span>
+                    <button class="add-to-order" onclick="addToCart(${item.id})">+ Chọn</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ==================== FILTER ====================
+function filterMenu(cat, el) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+    renderMenu(cat);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+    loadAllData();
+    
+    const bkDate = document.getElementById('bk-date');
+    if (bkDate) bkDate.min = new Date().toISOString().split('T')[0];
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username");
+
+    if (token && username) {
+        document.getElementById("authButtons").style.display = "none";
+        document.getElementById("userMenu").style.display = "flex";
+        document.getElementById("welcomeUser").innerText = "Xin chào, " + username;
+    }
+});
+
+//thêm vào giỏ
+function addToCart(productId) {
+    const product = menuData.find(item => item.id === productId);
+    
+    if (!product) {
+        showToast("Không tìm thấy món ăn!", "error");
+        return;
+    }
+
+    //Kiểm tra còn hàng không
+    if (product.stock <= 0) {
+        showToast("Món này đã hết hàng!", "error");
+        return;
+    }
+
+    //Kiểm tra món đã có trong giỏ chưa
+    const existing = cart.find(item => item.id === productId);
+
+    if (existing) {
+        existing.quantity += 1;         
+    } else {
+        cart.push({ ...product, quantity: 1 });  
+    }
+
+    //Cập nhật giao diện giỏ hàng
+    updateCartUI();
+    
+    showToast(`Đã thêm: ${product.name}`);
+}
+
+function updateCartUI() {
+    const cartBadge = document.getElementById('cartBadge');
+    const orderItems = document.getElementById('orderItems');
+    const orderTotal = document.getElementById('orderTotal');
+    const totalVal = document.getElementById('totalVal');
+
+    // Cập nhật số trên nút giỏ hàng
+    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartBadge.textContent = totalQuantity;
+
+    if (cart.length === 0) {
+        orderItems.innerHTML = `<div class="order-empty"><span>🍽️</span>Chưa có món nào được chọn</div>`;
+        orderTotal.style.display = 'none';
+        return;
+    }
+
+    // Hiển thị danh sách món trong panel
+    orderItems.innerHTML = cart.map(item => `
+        <div class="order-item">
+            <div class="order-item-info">
+                <div class="order-item-name">${item.name}</div>
+                <div class="order-item-price">${fmt(item.price)} × ${item.quantity}</div>
+            </div>
+            <div class="order-item-total">${fmt(item.price * item.quantity)}</div>
+            
+            <div class="order-item-actions">
+                <button onclick="changeQuantity(${item.id}, -1)" class="qty-btn">-</button>
+                <span class="qty">${item.quantity}</span>
+                <button onclick="changeQuantity(${item.id}, 1)" class="qty-btn">+</button>
+                <button onclick="removeFromCart(${item.id})" class="remove-btn">🗑</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Tính tổng tiền
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    totalVal.textContent = fmt(total);
+    orderTotal.style.display = 'block';
+}
+
+// ==================== THAY ĐỔI SỐ LƯỢNG ====================
+function changeQuantity(productId, change) {
+    const item = cart.find(i => i.id === productId);
+    if (!item) return;
+
+    item.quantity += change;
+
+    if (item.quantity < 1) {
+        removeFromCart(productId);
+    } else {
+        updateCartUI();
+    }
+}
+
+// ==================== XÓA MÓN KHỎI GIỎ ====================
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCartUI();
+}
+
+//hàm thông báo
+function showToast(message, type = "success") {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; toast.style.opacity = '1'; }, 400);
+    }, 2500);
+}
+
+// ── ORDER PANEL ──
+function toggleOrderPanel() {
+  document.getElementById('orderPanel').classList.toggle('open');
+}
+
+// ==================== PLACE ORDER - SỬA THEO DTO BACKEND ====================
+async function placeOrder() {
+    if (cart.length === 0) {
+        showToast("Giỏ hàng đang trống!", "error");
+        return;
+    }
+
+    const currentOrderStr = localStorage.getItem("currentOrder");
+    if (!currentOrderStr) {
+        showToast("Không tìm thấy Order!", "error");
+        return;
+    }
+
+    const currentOrder = JSON.parse(currentOrderStr);
+    const orderId = currentOrder.orderId;
+
+    // Chuẩn bị body theo đúng DTO AddItemsRequest
+    const requestBody = {
+        items: cart.map(item => ({
+            productId: item.id,
+            quantity: item.quantity
+        }))
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8081/beefchef/orders/${orderId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+                // Không cần Authorization nếu bạn cho phép public
+            },
+            body: JSON.stringify(requestBody)     
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Đặt món thất bại");
+        }
+
+        const data = await response.json();
+
+        showToast(`🎉 ${data.message || "Đã gọi món thành công!"}`, "success");
+
+        // Reset giỏ hàng
+        cart = [];
+        updateCartUI();
+        toggleOrderPanel();
+
+        // Cập nhật lại order
+        if (data.result) {
+            localStorage.setItem("currentOrder", JSON.stringify(data.result));
+        }
+        loadAllData();
+
+    } catch (error) {
+        console.error("Lỗi đặt món:", error);
+        showToast("Lỗi " + error.message, "error");
+    }
+}
+
+// ==================== ORDER STATUS MODAL ====================
+
+// ==================== HIỂN THỊ TRẠNG THÁI MÓN ĂN (Realtime từ Server) ====================
+async function showOrderStatus() {
+    const currentOrderStr = localStorage.getItem("currentOrder");
+    const modal = document.getElementById('orderStatusModal');
+    const content = document.getElementById('orderStatusContent');
+
+    if (!currentOrderStr) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:50px 20px; color:#888;">
+                <p>Chưa có order nào được tạo.</p>
+                <p>Vui lòng xác nhận bàn trước khi xem trạng thái món ăn.</p>
+            </div>`;
+        modal.style.display = "flex";
+        return;
+    }
+
+    const order = JSON.parse(currentOrderStr);
+    const orderId = order.orderId;
+
+    modal.style.display = "flex";
+
+    // Load lần đầu tiên
+    await loadOrderStatus(orderId, content);
+
+    // Dừng polling cũ nếu có
+    if (orderStatusInterval) {
+        clearInterval(orderStatusInterval);
+    }
+
+    // Bắt đầu Polling
+    orderStatusInterval = setInterval(() => {
+        loadOrderStatus(orderId, content);
+    }, POLLING_INTERVAL);
+}
+
+// ==================== HỦY MÓN ====================
+async function cancelOrderItem(orderId, orderItemId) {
+    if (!confirm("Bạn có chắc chắn muốn hủy món này không?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:8081/beefchef/orders/${orderId}/${orderItemId}/cancel`, 
+            {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" }
+            }
+        );
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(errText || "Không thể hủy món");
+        }
+
+        const data = await response.json();
+
+        showToast("Đã hủy món thành công!", "success");
+
+        // Cập nhật lại localStorage và refresh modal
+        if (data.result) {
+            localStorage.setItem("currentOrder", JSON.stringify(data.result));
+        }
+
+        // Tải lại modal để cập nhật giao diện
+        setTimeout(() => showOrderStatus(), 400);
+
+    } catch (error) {
+        console.error(error);
+        showToast("Lỗi " + error.message, "error");
+    }
+}
+
+// Hàm load & render trạng thái (dùng chung cho lần đầu và polling)
+async function loadOrderStatus(orderId, content) {
+    try {
+        const response = await fetch(`http://localhost:8081/beefchef/orders/${orderId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) throw new Error("Không thể lấy dữ liệu order");
+
+        const data = await response.json();
+        const latestOrder = data.result || data;
+
+        let html = `
+            <div class="order-info">
+                <strong>Bàn:</strong> ${latestOrder.tableName || '—'} &nbsp;&nbsp; 
+                <strong>Order #${latestOrder.orderId}</strong><br>
+                <small>Thời gian: ${new Date(latestOrder.createdAt).toLocaleString('vi-VN')}</small>
+            </div>
+            <hr>
+        `;
+
+        if (!latestOrder.items || latestOrder.items.length === 0) {
+            html += `<p style="text-align:center; color:#888; padding:40px;">Chưa có món nào được gọi.</p>`;
+        } else {
+            html += latestOrder.items.map(item => `
+                <div class="order-status-item">
+                    <div class="item-info">
+                        <div class="item-name">${item.productName}</div>
+                        <div class="item-quantity">
+                            ${item.orderItemQuantity} × ${fmt(item.orderItemPrice)}
+                        </div>
+                    </div>
+                    
+                    <div class="status-container">
+                        <div class="status-badge status-${item.orderItemStatus.toLowerCase()}">
+                            ${getStatusText(item.orderItemStatus)}
+                        </div>
+                        
+                        ${item.orderItemStatus === 'PENDING' ? `
+                        <button class="cancel-btn" 
+                                onclick="cancelOrderItem(${orderId}, ${item.orderItemId})">
+                            Hủy món
+                        </button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        content.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        content.innerHTML = `
+            <div style="text-align:center; color:#e74c3c; padding:40px;">
+                <p>Không thể tải trạng thái món ăn.</p>
+                <small>${error.message}</small>
+            </div>`;
+    }
+}
+
+function getStatusText(status) {
+    switch(status) {
+       case "PENDING": return "Đang chờ";
+        case "COOKING": return "Đang nấu";
+        case "READY":  return "Sẵn sàng";
+        case "SERVED": return "Đã phục vụ";
+        case "CANCEL": return "Đã hủy";
+        default: return status;
+    }
+}
+
+function closeOrderStatusModal() {
+    const modal = document.getElementById('orderStatusModal');
+    
+    // Dừng polling
+    if (orderStatusInterval) {
+        clearInterval(orderStatusInterval);
+        orderStatusInterval = null;
+    }
+
+    modal.style.display = "none";
+}
+
+// Đóng modal khi click ra ngoài
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('orderStatusModal');
+    if (e.target === modal) {
+        closeOrderStatusModal();
+    }
+});

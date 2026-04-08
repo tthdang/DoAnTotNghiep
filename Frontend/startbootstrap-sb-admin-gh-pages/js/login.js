@@ -55,6 +55,12 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             window.location.href = "homePage.html";
         }
 
+        if(result.role == "CHEF"){
+            alert("Đăng nhập thành công!");
+            // chuyển sang giao diện user
+            window.location.href = "orderChef.html";
+        }
+
         console.log("Saved username:", localStorage.getItem("username"));
 
     } catch (error) {

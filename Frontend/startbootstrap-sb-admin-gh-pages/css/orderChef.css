@@ -1,0 +1,99 @@
+/* ================= styles.css ================= */
+body {
+  font-family: Arial;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.board {
+  display: flex;
+  gap: 20px;
+}
+
+.column {
+  flex: 1;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.column h2 {
+  text-align: center;
+}
+
+.card {
+  background: #fafafa;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+button {
+  margin-top: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  
+}
+
+button:hover{
+  background-color: rgb(10, 220, 41);
+}
+
+.btn-confirm { background: orange; color: white; }
+.btn-ready { background: green; color: white; }
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+/* 🔥 Container chứa 3 cột */
+.container {
+    display: flex;
+    gap: 20px;
+}
+
+/* 🔥 Mỗi cột */
+.column {
+    flex: 1;
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 400px;
+}
+
+/* Card món ăn */
+.order-card {
+    background: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.column:nth-child(1) {
+    border-top: 5px solid orange;
+}
+
+.column:nth-child(2) {
+    border-top: 5px solid blue;
+}
+
+.column:nth-child(3) {
+    border-top: 5px solid green;
+}

@@ -1,0 +1,35 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitchen Dashboard</title>
+    <link rel="stylesheet" href="css/orderChef.css">
+</head>
+<body>
+    <h1>Kitchen Dashboard</h1>
+    <div class="container">
+        <div class="column">
+            <h2>Tiếp nhận</h2>
+            <div id="pending-list"></div>
+        </div>
+
+        <div class="column">
+            <h2>Đang nấu</h2>
+            <div id="cooking-list"></div>
+        </div>
+
+        <div class="column">
+            <h2>Sẵn sàng</h2>
+            <div id="ready-list"></div>
+        </div>
+
+
+    </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+  <script src="js/orderChef.js"></script>
+</body>
+</html>
