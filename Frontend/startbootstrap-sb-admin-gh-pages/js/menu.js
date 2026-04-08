@@ -1,18 +1,15 @@
-// ==================== CONFIG ====================
 const API_BASE = "http://localhost:8081/beefchef";
 const PRODUCTS_API = `${API_BASE}/products`;
 const CATEGORIES_API = `${API_BASE}/categories`;
 
-// ==================== BIẾN TOÀN CỤC ====================
-let menuData = [];
 let categories = [];
 
-// ==================== FORMAT GIÁ ====================
+// format giá
 function fmt(price) {
     return price.toLocaleString('vi-VN') + 'đ';
 }
 
-// ==================== TẠO SLUG ====================
+// tạo slug
 function createSlug(str) {
     return str
         .toLowerCase()
@@ -23,7 +20,7 @@ function createSlug(str) {
         .replace(/\s+/g, '');
 }
 
-// ==================== LOAD DATA ====================
+// lấy data
 async function loadAllData() {
     try {
         // Load danh mục

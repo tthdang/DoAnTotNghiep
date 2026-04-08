@@ -1,8 +1,8 @@
 const API_URL = "http://localhost:8081/beefchef/orderItem";
 
-//lấy dữ liệu từ API
+//lấy status từ API
 async function fetchOrders() {
-    const [pendingRes, cookingRes, readyRes, servedRes] = await Promise.all([
+    const [pendingRes, cookingRes, readyRes] = await Promise.all([
         fetch(API_URL + "?status=PENDING"),
         fetch(API_URL + "?status=COOKING"),
         fetch(API_URL + "?status=READY")

@@ -1,20 +1,19 @@
-// ==================== CONFIG ====================
 const API_BASE = "http://localhost:8081/beefchef";
 const PRODUCTS_API = `${API_BASE}/products`;
 const CATEGORIES_API = `${API_BASE}/categories`;
 
-// ==================== BIẾN TOÀN CỤC ====================
 let menuData = [];
 let categories = [];
 let cart = [];
-let orderStatusInterval = null;   // ← Đã có sẵn, giữ nguyên
-const POLLING_INTERVAL = 3000;    // 3 giây (có thể chỉnh)
-// ==================== FORMAT GIÁ ====================
+let orderStatusInterval = null;  
+const POLLING_INTERVAL = 3000;    // 3 giây 
+
+// format giá
 function fmt(price) {
     return price.toLocaleString('vi-VN') + 'đ';
 }
 
-// ==================== TẠO SLUG ====================
+// tạo slug
 function createSlug(str) {
     return str
         .toLowerCase()
@@ -25,7 +24,7 @@ function createSlug(str) {
         .replace(/\s+/g, '');
 }
 
-// ==================== LOAD DATA ====================
+// lấy data
 async function loadAllData() {
     try {
         // Load danh mục
@@ -65,7 +64,7 @@ async function loadAllData() {
     }
 }
 
-// ==================== RENDER TABS ====================
+// Hiển thị danh mục 
 function renderCategoryTabs() {
     const container = document.getElementById('categoryTabs');
     if (!container) {
@@ -86,7 +85,7 @@ function renderCategoryTabs() {
     container.innerHTML = html;
 }
 
-// ==================== RENDER MENU ====================
+//   hiển thị menu
 function renderMenu(filter = 'all') {
     const container = document.getElementById('menuGrid');
     if (!container) return;
@@ -125,14 +124,14 @@ function renderMenu(filter = 'all') {
     `).join('');
 }
 
-// ==================== FILTER ====================
+//   FILTER  
 function filterMenu(cat, el) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
     renderMenu(cat);
 }
 
-// ==================== INIT ====================
+//   INIT  
 document.addEventListener('DOMContentLoaded', () => {
     loadAllData();
     
@@ -222,7 +221,7 @@ function updateCartUI() {
     orderTotal.style.display = 'block';
 }
 
-// ==================== THAY ĐỔI SỐ LƯỢNG ====================
+// thay đổi số lượng
 function changeQuantity(productId, change) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
@@ -236,13 +235,13 @@ function changeQuantity(productId, change) {
     }
 }
 
-// ==================== XÓA MÓN KHỎI GIỎ ====================
+//  xoá món
 function removeFromCart(productId) {
     cart = cart.filter(item => item.id !== productId);
     updateCartUI();
 }
 
-//hàm thông báo
+// hàm thông báo
 function showToast(message, type = "success") {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -260,7 +259,7 @@ function toggleOrderPanel() {
   document.getElementById('orderPanel').classList.toggle('open');
 }
 
-// ==================== PLACE ORDER - SỬA THEO DTO BACKEND ====================
+//   PLACE ORDER - SỬA THEO DTO BACKEND  
 async function placeOrder() {
     if (cart.length === 0) {
         showToast("Giỏ hàng đang trống!", "error");
@@ -320,9 +319,8 @@ async function placeOrder() {
     }
 }
 
-// ==================== ORDER STATUS MODAL ====================
 
-// ==================== HIỂN THỊ TRẠNG THÁI MÓN ĂN (Realtime từ Server) ====================
+//   HIỂN THỊ TRẠNG THÁI MÓN ĂN (Realtime từ Server)  
 async function showOrderStatus() {
     const currentOrderStr = localStorage.getItem("currentOrder");
     const modal = document.getElementById('orderStatusModal');
@@ -357,7 +355,7 @@ async function showOrderStatus() {
     }, POLLING_INTERVAL);
 }
 
-// ==================== HỦY MÓN ====================
+//   HỦY MÓN  
 async function cancelOrderItem(orderId, orderItemId) {
     if (!confirm("Bạn có chắc chắn muốn hủy món này không?")) {
         return;
