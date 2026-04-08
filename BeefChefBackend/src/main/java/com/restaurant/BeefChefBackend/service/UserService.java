@@ -2,7 +2,10 @@ package com.restaurant.BeefChefBackend.service;
 
 import com.restaurant.BeefChefBackend.dto.request.UserCreateRequest;
 import com.restaurant.BeefChefBackend.dto.request.UserUpdateRequest;
+import com.restaurant.BeefChefBackend.dto.response.TableResponse;
+import com.restaurant.BeefChefBackend.dto.response.UserResponse;
 import com.restaurant.BeefChefBackend.entity.Ranks;
+import com.restaurant.BeefChefBackend.entity.Tables;
 import com.restaurant.BeefChefBackend.entity.User;
 import com.restaurant.BeefChefBackend.enums.Roles;
 import com.restaurant.BeefChefBackend.repository.RankRepository;
@@ -24,8 +27,32 @@ public class UserService {
     @Autowired
     private RankRepository rankRepository;
 
+    private UserResponse toResponse(User user){
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .userPhone(user.getUserPhone())
+                .userPassword(user.getUserPassword())
+                .userFirstname(user.getUserFirstname())
+                .userLastname(user.getUserLastname())
+                .userGender(user.getUserGender())
+                .userRole(user.getUserRole())
+                .userDoB(user.getUserDoB())
+                .userPoint(user.getUserPoint())
+                .rank(user.getRank())
+                .build();
+    }
+
     //tạo user mới
-    public User createUser (UserCreateRequest request){
+    public UserResponse createUser (UserCreateRequest request){
+
+        List<User> list = userRepository.findAll();
+
+        for (User u : list){
+            if (u.getUserPhone().equalsIgnoreCase(request.getUserPhone())){
+                throw new IllegalArgumentException("Số điện thoại đã được sử dụng!");
+            }
+        }
+
         User user = new User();
 
         user.setUserPhone(request.getUserPhone());
@@ -47,7 +74,8 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Rank not found!"));
 
         user.setRank(rank);
-        return userRepository.save(user);
+        User save = userRepository.save(user);
+        return toResponse(save);
     }
 
     //Get toàn bộ user

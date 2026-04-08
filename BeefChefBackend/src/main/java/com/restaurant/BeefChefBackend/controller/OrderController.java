@@ -48,7 +48,7 @@ public class OrderController {
                     .build();
         } catch (Exception e) {
             return ApiResponse.<OrderResponse>builder()
-                    .message("Lỗi khi xếp bàn!")
+                    .message("Lỗi khi xếp bàn!" + e.getMessage())
                     .build();
         }
     }
@@ -64,6 +64,20 @@ public class OrderController {
         } catch (Exception e){
             return ApiResponse.<OrderResponse>builder()
                     .message("Lỗi khi thêm món ăn: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @GetMapping
+    public ApiResponse<List<OrderResponse>> getOrders(){
+        try {
+            return ApiResponse.<List<OrderResponse>>builder()
+                    .result(orderService.getOrders())
+                    .message("Lấy tất cả các Order thành công")
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<List<OrderResponse>>builder()
+                    .message("Lỗi lấy cả order: " + e.getMessage())
                     .build();
         }
     }
@@ -111,6 +125,21 @@ public class OrderController {
         } catch (Exception e) {
             return ApiResponse.<OrderResponse>builder()
                     .message("Thanh toán thất bại!" + e.getMessage())
+                    .build();
+        }
+    }
+
+    //cancel OrderItem
+    @PutMapping("/{orderId}/{orderItemId}/cancel")
+    public ApiResponse<OrderResponse> cancelItem(@PathVariable Integer orderId, @PathVariable Integer orderItemId) {
+        try {
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Huỷ món ăn thành công!")
+                    .result(orderService.cancelOrderItem(orderId, orderItemId))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Lỗi khi huỷ món ăn: " + e.getMessage())
                     .build();
         }
     }

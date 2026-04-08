@@ -5,6 +5,7 @@ import com.restaurant.BeefChefBackend.dto.response.OrderItemResponse;
 import com.restaurant.BeefChefBackend.entity.OrderItems;
 import com.restaurant.BeefChefBackend.entity.Orders;
 import com.restaurant.BeefChefBackend.entity.Products;
+import com.restaurant.BeefChefBackend.entity.Tables;
 import com.restaurant.BeefChefBackend.enums.OrderItemStatus;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
 import com.restaurant.BeefChefBackend.enums.ProductStatus;
@@ -32,6 +33,10 @@ public class OrderItemService {
     private OrderService orderService;
 
     public OrderItemResponse toResponse(OrderItems orderItem){
+        Orders order = orderItem.getOrder();
+
+        Tables table = order.getTable();
+
         return OrderItemResponse.builder()
                 .orderItemId(orderItem.getOrderItemId())
                 .orderId(orderItem.getOrder().getOrderId())
@@ -40,14 +45,24 @@ public class OrderItemService {
                 .orderItemQuantity(orderItem.getOrderItemQuantity())
                 .orderItemPrice(orderItem.getOrderItemPrice())
                 .orderItemStatus(orderItem.getOrderItemStatus())
+                .tableName(table.getTableName())
                 .orderItemCreatedAt(orderItem.getOrderItemCreatedAt())
                 .build();
     }
 
     public OrderItems getItem(Integer id){
         return orderItemRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("OderItem not found!")
+                () -> new RuntimeException("OderItem Không tìm thấy!")
         );
+    }
+
+    //get OrderItem theo status
+
+    public List<OrderItemResponse> getOrderItemByStatus(OrderItemStatus orderItemStatus){
+        return orderItemRepository.findByOrderItemStatus(orderItemStatus)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
 
@@ -55,6 +70,7 @@ public class OrderItemService {
 //
 //    }
 
+    //update trạng thai orderItem
     public OrderItemResponse updateOrderItemStatus(Integer id, UpdateOrderItemRequest request){
         OrderItems orderItem = getItem(id);
 
@@ -77,7 +93,7 @@ public class OrderItemService {
             Orders order = orderItem.getOrder();
 
             if(order == null){
-                throw new RuntimeException("OrderItem không có Order!");
+                throw new IllegalArgumentException("OrderItem không có Order!");
             }
 
             BigDecimal itemTotal = orderItem.getOrderItemPrice().multiply(BigDecimal.valueOf(orderItem.getOrderItemQuantity()));

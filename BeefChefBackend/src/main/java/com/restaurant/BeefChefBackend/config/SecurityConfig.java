@@ -12,8 +12,12 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -28,9 +32,9 @@ public class SecurityConfig {
             "/products/**",
             "/products/stockAndStatus/{id}",
             "/orders/**",
-            "/orders/{orderId}",
-            "/tables",
-            "/orderItem",
+
+            "/tables/**",
+            "/orderItem/**",
             "/orderItem/{orderItemId}",
             "/shift/**",
             "/report/**",
@@ -44,19 +48,25 @@ public class SecurityConfig {
 //    };
 
     private final String[] ADMIN_ENDPOINT = {"/users",
-            "/categories",
-            "/products"
+//            "/categories",
+//            "/products"
+            "/products/{id}",
     };
 
     @Bean
     public SecurityFilterChain fillerChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.authorizeHttpRequests(request ->
+
+
+        httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.DELETE, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT)
-                        .hasAuthority("SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT).hasAuthority("SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, ADMIN_ENDPOINT).hasAuthority("SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, ADMIN_ENDPOINT).hasAuthority("SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT).hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated());
 
 
@@ -67,6 +77,27 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Cho phép frontend của bạn
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"
+        ));
+
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
@@ -84,4 +115,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 }

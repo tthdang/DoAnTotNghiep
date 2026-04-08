@@ -9,6 +9,7 @@ import com.restaurant.BeefChefBackend.dto.request.IntrospectRequest;
 import com.restaurant.BeefChefBackend.dto.response.AuthResponse;
 import com.restaurant.BeefChefBackend.dto.response.IntrospectResponse;
 import com.restaurant.BeefChefBackend.entity.User;
+import com.restaurant.BeefChefBackend.enums.Roles;
 import com.restaurant.BeefChefBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,12 +37,15 @@ public class AuthService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getUserPassword(), user.getUserPassword());
         if (!authenticated){
-            throw new RuntimeException("Login successfully!");
+            throw new RuntimeException("Sai tài khoản hoặc mật khẩu!");
         }
+        var role = user.getUserRole().iterator().next();
         var token = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .authenticated(true)
+                .userName(user.getUserFirstname() + " " + user.getUserLastname())
+                .role(role)
                 .build();
     }
 

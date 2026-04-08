@@ -8,6 +8,7 @@ import com.restaurant.BeefChefBackend.dto.response.OrderResponse;
 import com.restaurant.BeefChefBackend.entity.*;
 import com.restaurant.BeefChefBackend.enums.OrderItemStatus;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
+import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import com.restaurant.BeefChefBackend.enums.TableStatus;
 import com.restaurant.BeefChefBackend.repository.*;
 import jakarta.transaction.Transactional;
@@ -166,7 +167,7 @@ public class OrderService {
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItemRequest orderItemRequest : lists){
             Products product = productRepository.findById(orderItemRequest.getProductId()).orElseThrow(
-                    () -> new RuntimeException("Product " + orderItemRequest.getProductId() + " not found!")
+                    () -> new IllegalStateException("Product " + orderItemRequest.getProductId() + " not found!")
             );
 
             //update lại stock của product đã gọi
@@ -203,6 +204,14 @@ public class OrderService {
         return orderRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("Order not found!")
         );
+    }
+
+    //getAllOrder
+    public List<OrderResponse> getOrders(){
+        return orderRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     //add them order item moi
@@ -254,13 +263,58 @@ public class OrderService {
         if(checkStatusOrderItem){
             order.setOrderStatus(request.getOrderStatus());
         }else{
-            throw new IllegalStateException("Tất cả các orderItem liên quan chưa được mang ra bàn!");
+            throw new IllegalArgumentException("Tất cả các orderItem liên quan chưa được mang ra bàn!");
         }
 
         Orders save = orderRepository.save(order);
         return toResponse(save);
 
     }
+
+    //cancel orderItem
+    public OrderResponse cancelOrderItem(Integer orderId, Integer orderItemId){
+
+
+        OrderItems orderItem = orderItemRepository.findById(orderItemId).orElseThrow(
+                () -> new IllegalArgumentException("Không tìm thấy OrderItem có id: " + orderItemId)
+        );
+
+        if(!orderItem.getOrder().getOrderId().equals(orderId)){
+            throw new IllegalArgumentException("Món ăn này không thuộc order có id: " + orderId);
+        }
+
+        if (orderItem.getOrderItemStatus() != OrderItemStatus.PENDING) {
+            throw new IllegalStateException("Món đã được nấu không thể huỷ!");
+        }
+
+        Products product = orderItem.getProduct();
+
+        // Hoàn lại stock
+        product.setProductStock(product.getProductStock() + orderItem.getOrderItemQuantity());
+        if (product.getProductStock() > 0) {
+            product.setProductStatus(ProductStatus.AVAILABLE);
+        }
+        productRepository.save(product);
+
+        // Cập nhật trạng thái hủy
+        orderItem.setOrderItemStatus(OrderItemStatus.CANCEL);
+        orderItem.setOrderItemCreatedAt(LocalDateTime.now());
+        orderItemRepository.save(orderItem);
+
+        // Cập nhật tổng tiền order
+        Orders order = orderItem.getOrder();
+        BigDecimal itemTotal = orderItem.getOrderItemPrice()
+                .multiply(BigDecimal.valueOf(orderItem.getOrderItemQuantity()));
+
+        order.setOrderTotal(order.getOrderTotal().subtract(itemTotal));
+        if (order.getOrderTotal().compareTo(BigDecimal.ZERO) < 0) {
+            order.setOrderTotal(BigDecimal.ZERO);
+        }
+        Orders save = orderRepository.save(order);
+
+        return toResponse(save);
+    }
+
 
     //Pay order
     public OrderResponse paidOrder(Integer id){
@@ -291,6 +345,11 @@ public class OrderService {
             userRepository.save(user);
         }
 
+        Tables table = save.getTable();
+        if(table != null){
+            table.setTableStatus(TableStatus.AVAILABLE);
+            tableRepository.save(table);
+        }
 
 
         return toResponse(save);

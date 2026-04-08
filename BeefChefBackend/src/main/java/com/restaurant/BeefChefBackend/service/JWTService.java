@@ -32,7 +32,7 @@ public class JWTService {
                 .subject(user.getUserPhone())
                 .issuer("beefchef.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(4, ChronoUnit.HOURS).toEpochMilli()))
+                .expirationTime(new Date(Instant.now().plus(8, ChronoUnit.HOURS).toEpochMilli()))
                 .claim("scope", buildScope(user))
                 .build();
 

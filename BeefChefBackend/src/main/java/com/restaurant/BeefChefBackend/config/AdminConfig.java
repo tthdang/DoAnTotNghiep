@@ -42,6 +42,20 @@ public class AdminConfig {
                 userRepository.save(admin);
                 log.warn("Admin user has been created with default password: admin. PLease change it!");
             }
+            if(userRepository.findByUserPhone("chef123").isEmpty()){
+                var role = new HashSet<String>();
+                role.add(Roles.CHEF.name());
+                Ranks rank = rankService.getRankById(5);
+                User admin = User.builder()
+                        .userPhone("chef123")
+                        .userPassword(passwordEncoder.encode("chef123"))
+                        .userRole(role)
+                        .userPoint(100000L)
+                        .rank(rank)
+                        .build();
+                userRepository.save(admin);
+                log.warn("Chef user has been created with default password: chef. PLease change it!");
+            }
         };
     }
 }

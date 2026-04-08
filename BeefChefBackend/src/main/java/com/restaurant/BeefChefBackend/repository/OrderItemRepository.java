@@ -2,6 +2,7 @@ package com.restaurant.BeefChefBackend.repository;
 
 import com.restaurant.BeefChefBackend.dto.response.ProductReportResponse;
 import com.restaurant.BeefChefBackend.entity.OrderItems;
+import com.restaurant.BeefChefBackend.enums.OrderItemStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -9,6 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItems, Integer> {
+
+    //Lay orderItem theo status
+    List<OrderItems> findByOrderItemStatus(OrderItemStatus status);
 
     // thống kê theo thời gian
     @Query("""

@@ -40,7 +40,7 @@ public class ProductService {
 
     //Create product
     public ProductResponse createProduct(ProductCreateRequest request){
-        Categories categories = categoryRepository.findById(request.getCategoryId()).orElseThrow(
+        Categories categories = categoryRepository.findById(request.getCategory().getCategoryId()).orElseThrow(
                 () -> new RuntimeException("Category not found!")
         );
 
@@ -76,7 +76,7 @@ public class ProductService {
     //Update Product
     public ProductResponse updateProduct(Integer id, ProductUpdateRequest request){
 
-        Categories categories = categoryRepository.findById(request.getCategoryId()).orElseThrow(
+        Categories categories = categoryRepository.findById(request.getCategory().getCategoryId()).orElseThrow(
                 () -> new RuntimeException("Category not found!")
         );
 
