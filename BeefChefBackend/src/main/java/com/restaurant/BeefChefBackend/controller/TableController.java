@@ -28,8 +28,11 @@ public class TableController {
     }
 
     @GetMapping()
-    private List<Tables> getAllTable(){
-        return service.getAll();
+    private ApiResponse<List<TableResponse>> getAllTable(){
+        return ApiResponse.<List<TableResponse>>builder()
+                .message("Lấy danh sách bàn thành công!")
+                .result(service.getAll())
+                .build();
     }
 
     @GetMapping("/{id}")

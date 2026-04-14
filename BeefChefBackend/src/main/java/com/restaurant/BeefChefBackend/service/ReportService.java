@@ -1,5 +1,6 @@
 package com.restaurant.BeefChefBackend.service;
 
+import com.restaurant.BeefChefBackend.dto.response.ChartResponse;
 import com.restaurant.BeefChefBackend.dto.response.ProductReportResponse;
 import com.restaurant.BeefChefBackend.dto.response.ReportResponse;
 import com.restaurant.BeefChefBackend.repository.OrderItemRepository;
@@ -11,6 +12,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,76 +22,88 @@ public class ReportService {
     private OrderItemRepository orderItemRepository;
 
     // thống kê theo ca
-    public ReportResponse getByShift(Integer shiftId){
-        List<ProductReportResponse> list = orderItemRepository.statisticByShift(shiftId);
-
-        BigDecimal total = list.stream()
-                .map(ProductReportResponse::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return ReportResponse.builder()
-                .listProductReportResponses(list)
-                .totalReport(total)
-                .build();
-    }
-
-    //thống kê theo ngày
-    public ReportResponse getByDate(LocalDate date){
+    public ReportResponse getByShiftAndDate(Integer shiftId, LocalDate date){
 
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(23,59,59);
 
-        List<ProductReportResponse> list = orderItemRepository.statisticByTime(start, end);
+        List<ProductReportResponse> list =
+                orderItemRepository.statisticByShiftAndDate(shiftId, start, end);
 
         BigDecimal total = list.stream()
                 .map(ProductReportResponse::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        int totalOrders = orderItemRepository
+                .countOrdersByShiftAndDate(shiftId, start, end);
+
+        ProductReportResponse bestSeller =
+                list.isEmpty() ? null : list.get(0);
+
         return ReportResponse.builder()
                 .listProductReportResponses(list)
                 .totalReport(total)
+                .totalOrders(totalOrders)
+                .bestSeller(bestSeller)
                 .build();
     }
 
-    //thống kê theo tuần
-    public ReportResponse getByWeek(LocalDate date){
+    //theo ngày
+    public ChartResponse getReportByDay(int month, int year) {
 
-        LocalDate startDate = date.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
-        LocalDate endDate = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        List<Object[]> data = orderItemRepository.reportByDay(month, year);
 
-        List<ProductReportResponse> list = orderItemRepository.statisticByTime(startDate.atStartOfDay(),
-                endDate.atTime(23,59,59));
+        List<String> days = new ArrayList<>();
+        List<BigDecimal> values = new ArrayList<>();
 
-        BigDecimal total = list.stream()
-                .map(ProductReportResponse::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        for (Object[] row : data) {
+            days.add("Ngày " + row[0]);
+            values.add((BigDecimal) row[1]);
+        }
 
-        System.out.println("Start: " + startDate);
-        System.out.println("End: " + endDate);
-
-        return ReportResponse.builder()
-                .listProductReportResponses(list)
-                .totalReport(total)
-                .build();
+        return new ChartResponse(days, values);
     }
 
-    // thống kê theo tháng
-    public ReportResponse getByMonth(int year, int month){
+    //theo tuần
+    public ChartResponse getReportByWeek(int month, int year) {
 
-        LocalDate start = LocalDate.of(year, month, 1);
-        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+        List<Object[]> data = orderItemRepository.reportByWeek(month, year);
+        List<String> weekLabels = new ArrayList<>();
+        List<BigDecimal> values = new ArrayList<>();
 
-        List<ProductReportResponse> list = orderItemRepository.statisticByTime(start.atStartOfDay(),
-                end.atTime(23,59,59));
+        for (Object[] row : data) {
+            int weekOfYear = ((Number) row[0]).intValue();
+            BigDecimal amount = (BigDecimal) row[1];
 
-        BigDecimal total = list.stream()
-                .map(ProductReportResponse::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            // Tính tuần trong tháng (1-5)
+            LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+            int weekInMonth = calculateWeekOfMonth(firstDayOfMonth, weekOfYear);
 
-        return ReportResponse.builder()
-                .listProductReportResponses(list)
-                .totalReport(total)
-                .build();
+            weekLabels.add("Tuần " + weekInMonth);
+            values.add(amount);
+        }
+
+        return new ChartResponse(weekLabels, values);
+    }
+
+    //tính tuần trong tháng
+    private int calculateWeekOfMonth(LocalDate firstDayOfMonth, int weekOfYear) {
+        int weekOfMonth = 1;
+        LocalDate date = firstDayOfMonth;
+
+        while (date.getYear() < firstDayOfMonth.plusMonths(1).getYear() ||
+                date.getMonthValue() <= firstDayOfMonth.getMonthValue()) {
+
+            if (date.get(WeekFields.ISO.weekOfWeekBasedYear()) == weekOfYear) {
+                return weekOfMonth;
+            }
+
+            if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                weekOfMonth++;
+            }
+            date = date.plusDays(1);
+        }
+        return weekOfMonth;
     }
 
 }

@@ -4,6 +4,7 @@ import com.restaurant.BeefChefBackend.dto.request.TableCreateRequest;
 import com.restaurant.BeefChefBackend.dto.request.TableUpdateRequest;
 import com.restaurant.BeefChefBackend.dto.response.ApiResponse;
 import com.restaurant.BeefChefBackend.dto.response.TableResponse;
+import com.restaurant.BeefChefBackend.entity.Orders;
 import com.restaurant.BeefChefBackend.entity.Tables;
 import com.restaurant.BeefChefBackend.enums.TableStatus;
 import com.restaurant.BeefChefBackend.repository.TableRepository;
@@ -17,12 +18,18 @@ public class TableService {
     @Autowired
     private TableRepository tableRepository;
 
+    @Autowired
+    private OrderService orderService;
+
     private TableResponse toResponse(Tables table){
+        Orders orders = orderService.getCurrentOrderByTableId(table.getTableId());
+
         return TableResponse.builder()
                 .tableId(table.getTableId())
                 .tableName(table.getTableName())
                 .tableCapacity(table.getTableCapacity())
                 .tableStatus(table.getTableStatus())
+                .orderId(orders != null ? orders.getOrderId() : null)
                 .build();
     }
 
@@ -44,8 +51,11 @@ public class TableService {
     }
 
     //Get All table
-    public List<Tables> getAll(){
-        return tableRepository.findAll();
+    public List<TableResponse> getAll(){
+        return tableRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
 

@@ -57,7 +57,6 @@ public class OrderItemService {
     }
 
     //get OrderItem theo status
-
     public List<OrderItemResponse> getOrderItemByStatus(OrderItemStatus orderItemStatus){
         return orderItemRepository.findByOrderItemStatus(orderItemStatus)
                 .stream()
@@ -134,6 +133,8 @@ public class OrderItemService {
             orderItem.setOrderItemStatus(request.getOrderItemStatus());
             orderItem.setOrderItemCreatedAt(LocalDateTime.now());
             save = orderItemRepository.save(orderItem);
+
+            orderService.autoUpdateOrderStatus(orderItem.getOrder().getOrderId());
 
         }
 

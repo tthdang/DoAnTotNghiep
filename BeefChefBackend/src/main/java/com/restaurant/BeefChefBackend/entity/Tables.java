@@ -1,8 +1,11 @@
 package com.restaurant.BeefChefBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.restaurant.BeefChefBackend.enums.TableStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -19,4 +22,8 @@ public class Tables {
 
     @Enumerated(EnumType.STRING)
     private TableStatus tableStatus;
+
+    @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Orders> orders;
 }

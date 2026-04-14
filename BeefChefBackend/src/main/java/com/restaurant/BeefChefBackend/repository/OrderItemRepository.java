@@ -14,7 +14,31 @@ public interface OrderItemRepository extends JpaRepository<OrderItems, Integer> 
     //Lay orderItem theo status
     List<OrderItems> findByOrderItemStatus(OrderItemStatus status);
 
-    // thống kê theo thời gian
+    // thống kê theo ngày trong tháng
+    @Query("""
+        SELECT DAY(o.createdAt), SUM(o.orderTotal)
+        FROM Orders o
+        WHERE MONTH(o.createdAt) = :month
+            AND YEAR(o.createdAt) = :year
+            AND o.orderStatus = 'PAID'
+        GROUP BY DAY(o.createdAt)
+        ORDER BY DAY(o.createdAt)
+    """)
+    List<Object[]> reportByDay(int month, int year);
+
+    //thống kê tuần theo tháng
+    @Query("""
+        SELECT WEEK(o.createdAt), SUM(o.orderTotal)
+        FROM Orders o
+        WHERE MONTH(o.createdAt) = :month
+            AND YEAR(o.createdAt) = :year
+            AND o.orderStatus = 'PAID'
+        GROUP BY WEEK(o.createdAt)
+        ORDER BY WEEK(o.createdAt)
+    """)
+    List<Object[]> reportByWeek(int month, int year);
+
+    //thống kê theo ca
     @Query("""
         SELECT new com.restaurant.BeefChefBackend.dto.response.ProductReportResponse(
             p.productName,
@@ -25,28 +49,30 @@ public interface OrderItemRepository extends JpaRepository<OrderItems, Integer> 
         FROM OrderItems oi
         JOIN oi.product p
         JOIN oi.order o
-        WHERE o.createdAt BETWEEN :start AND :end
-          AND o.orderStatus = 'PAID'
+        WHERE o.shift.shiftId = :shiftId
+            AND o.orderStatus = 'PAID'
+            AND o.createdAt BETWEEN :start AND :end
         GROUP BY p.productName, p.productImage
         ORDER BY SUM(oi.orderItemQuantity) DESC
     """)
-    List<ProductReportResponse> statisticByTime(LocalDateTime start, LocalDateTime end);
+    List<ProductReportResponse> statisticByShiftAndDate(
+            Integer shiftId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
 
-    //thống kê theo ca
+    //đếm số đơn
     @Query("""
-        SELECT new com.restaurant.BeefChefBackend.dto.response.ProductReportResponse(
-        p.productName,
-        p.productImage,
-        SUM(oi.orderItemQuantity),
-        SUM(oi.orderItemQuantity * oi.orderItemPrice)
-        )
+        SELECT COUNT(DISTINCT o.orderId)
         FROM OrderItems oi
-        JOIN oi.product p
         JOIN oi.order o
         WHERE o.shift.shiftId = :shiftId
-          AND o.orderStatus = 'PAID'
-        GROUP BY p.productName, p.productImage
-        ORDER BY SUM(oi.orderItemQuantity) DESC
+            AND o.orderStatus = 'PAID'
+            AND o.createdAt BETWEEN :start AND :end
     """)
-    List<ProductReportResponse> statisticByShift(Integer shiftId);
+    int countOrdersByShiftAndDate(
+            Integer shiftId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }

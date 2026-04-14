@@ -10,11 +10,9 @@ import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class ReportResponse {
-    private List<ProductReportResponse> listProductReportResponses;
-    private BigDecimal totalReport;
-    private int totalOrders;
-    private ProductReportResponse bestSeller;
+@Data
+public class ChartResponse {
+    private List<String> days;
+    private List<BigDecimal> values;
 }

@@ -202,7 +202,7 @@ public class OrderService {
     //get order by id
     public Orders getOrder(Integer id){
         return orderRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Order not found!")
+                () -> new IllegalArgumentException("Order not found!")
         );
     }
 
@@ -249,6 +249,7 @@ public class OrderService {
             orderItemRepository.save(item);
             order.getItem().add(item);
         }
+        order.setOrderStatus(OrderStatus.ORDERING);
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
         Orders updatedOrder = orderRepository.save(order);
 
@@ -353,5 +354,29 @@ public class OrderService {
 
 
         return toResponse(save);
+    }
+
+    // Lấy order theo id bàn
+    public Orders getCurrentOrderByTableId(Integer tableId) {
+        return orderRepository.findCurrentOrderByTableId(tableId).orElse(null);
+    }
+
+    //tu dong cap nhat trang thai order
+    public void autoUpdateOrderStatus(Integer orderId){
+        Orders order = getOrder(orderId);
+
+
+
+        //bỏ qua cancel
+        boolean allItemsServed = order.getItem().stream()
+                .filter(item -> item.getOrderItemStatus() != OrderItemStatus.CANCEL)
+                .allMatch(item -> item.getOrderItemStatus() == OrderItemStatus.SERVED);
+
+
+        if (allItemsServed && order.getOrderStatus() != OrderStatus.SERVED) {
+            order.setOrderStatus(OrderStatus.SERVED);
+            orderRepository.save(order);
+
+        }
     }
 }
