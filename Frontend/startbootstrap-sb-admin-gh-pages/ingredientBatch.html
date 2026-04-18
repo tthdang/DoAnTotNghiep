@@ -94,7 +94,7 @@
                         </a>
                         <a class="nav-link" href="productAdmin.html">
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Sản phẩm
+                            Món ăn
                         </a>
                     </div>
                 </div>
@@ -104,23 +104,22 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <h1 class="mt-4">Products</h1>
+                    <h1 class="mt-4">Lô nguyên liệu</h1>
                     <ol class="breadcrumb mb-4">
-                        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Products</li>
+                        <li class="breadcrumb-item"><a href="index.html">Thống kê</a></li>
+                        <li class="breadcrumb-item active">Lô nguyên liệu</li>
                     </ol>
                     <div class="card mb-4">
                         <div class="card-body">
                             Danh sách thông tin sản phẩm của nhà hàng BeefChef
                             <!-- <a target="_blank" href="https://datatables.net/">official DataTables documentation</a> -->
+                            .
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="createProduct.html" class="btn btn-primary">
-                            Thêm sản phẩm
+                        <a href="createBatch.html" class="btn btn-primary">
+                            Thêm lô nguyên liệu
                         </a>
-                        </br>
-                        </br>
                         </br>
                     </div>
 
@@ -128,7 +127,7 @@
 
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>
-                            DataProduct
+                            Danh sách lô nguyên liệu
                         </div>
 
                         <div class="card-body">
@@ -136,19 +135,16 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Ảnh</th>
-                                        <th>Tên món</th>
-                                        <th>Mô tả</th>
-                                        <th>Danh mục</th>
-                                        <th>Giá</th>
-                                        <th>Kho</th>
-                                        <th>Đã bán</th>
+                                        <th>Tên nguyên liệu</th>
+                                        <th>Số lượng nhập</th>
+                                        <th>Số lượng còn lại</th>
+                                        <th>Ngày nhập</th>
+                                        <th>Ngày hết hạn</th>
+                                        <th>Giá tiền</th>
                                         <th>Trạng thái</th>
-                                        <th>Hành động</th>
                                     </tr>
                                 </thead>
-                                //danh sách sản phẩm
-                                <tbody id="productTableBody">
+                                <tbody id="batchTableBody">
 
                                 </tbody>
                             </table>
@@ -176,7 +172,7 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
     <!-- <script src="js/datatables-simple-demo.js"></script> -->
-    <script src="js/products.js"></script>
+    <script src="js/batch.js"></script>
 </body>
 
 </html>

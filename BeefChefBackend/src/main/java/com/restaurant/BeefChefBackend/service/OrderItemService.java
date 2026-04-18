@@ -32,6 +32,9 @@ public class OrderItemService {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private IngredientBatchService ingredientBatchService;
+
     public OrderItemResponse toResponse(OrderItems orderItem){
         Orders order = orderItem.getOrder();
 
@@ -81,41 +84,12 @@ public class OrderItemService {
         Products product = productService.getProduct(orderItem.getProduct().getProductId());
 
 
-        if(nextStatus == OrderItemStatus.CANCEL){
-
-            product.setProductStock(product.getProductStock() + orderItem.getOrderItemQuantity());
-
-            if(product.getProductStatus() == ProductStatus.OUT_OF_STOCK){
-                product.setProductStatus(ProductStatus.AVAILABLE);
-            }
-
-            Orders order = orderItem.getOrder();
-
-            if(order == null){
-                throw new IllegalArgumentException("OrderItem không có Order!");
-            }
-
-            BigDecimal itemTotal = orderItem.getOrderItemPrice().multiply(BigDecimal.valueOf(orderItem.getOrderItemQuantity()));
-
-            order.setOrderTotal(order.getOrderTotal().subtract(itemTotal));
-
-            if (order.getOrderTotal().compareTo(BigDecimal.ZERO) < 0) {
-                order.setOrderTotal(BigDecimal.ZERO);
-            }
-
-            orderRepository.save(order);
-            orderItem.setOrderItemStatus(nextStatus);
-            orderItem.setOrderItemCreatedAt(LocalDateTime.now());
-
-            OrderItems saveCancel = orderItemRepository.save(orderItem);
-
-            return toResponse(saveCancel);
-
-        }
-
         if(lastStatus ==  OrderItemStatus.PENDING && nextStatus == OrderItemStatus.COOKING){
+
+//            ingredientBatchService.deductIngredientsByProduct(product, orderItem.getOrderItemQuantity());
+
             orderItem.setOrderItemStatus(request.getOrderItemStatus());
-            orderItem.setOrderItemCreatedAt(LocalDateTime.now());
+
             save = orderItemRepository.save(orderItem);
 
             product.setProductSold(product.getProductSold() + orderItem.getOrderItemQuantity());
@@ -124,14 +98,15 @@ public class OrderItemService {
             orders.setOrderStatus(OrderStatus.COOKING);
             orderRepository.save(orders);
         }
+
         if (lastStatus ==  OrderItemStatus.COOKING && nextStatus == OrderItemStatus.READY) {
             orderItem.setOrderItemStatus(request.getOrderItemStatus());
-            orderItem.setOrderItemCreatedAt(LocalDateTime.now());
+
              save = orderItemRepository.save(orderItem);
         }
         if (lastStatus ==  OrderItemStatus.READY && nextStatus == OrderItemStatus.SERVED) {
             orderItem.setOrderItemStatus(request.getOrderItemStatus());
-            orderItem.setOrderItemCreatedAt(LocalDateTime.now());
+
             save = orderItemRepository.save(orderItem);
 
             orderService.autoUpdateOrderStatus(orderItem.getOrder().getOrderId());

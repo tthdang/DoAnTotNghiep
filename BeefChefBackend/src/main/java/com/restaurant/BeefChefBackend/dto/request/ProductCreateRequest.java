@@ -4,6 +4,7 @@ import com.restaurant.BeefChefBackend.entity.Categories;
 import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,5 +18,6 @@ public class ProductCreateRequest {
     private String productImage;
     private String productDescription;
     private Integer productStock;
-    private Categories category;
+    private Integer categoryId;
+    private List<RecipeRequest> recipes;
 }

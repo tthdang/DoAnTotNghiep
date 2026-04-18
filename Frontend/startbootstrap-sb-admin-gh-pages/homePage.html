@@ -55,6 +55,23 @@
   </div>
 </section>
 
+<!-- top 5 -->
+<section id="signatureDishes" class="signature-section">
+  <div class="container">
+    <div class="section-header text-center">
+      <span class="section-label">✦ Signature Dishes</span>
+      <h2 class="section-title">Những Món Nổi Bật Nhất</h2>
+      <p class="section-subtitle">
+        Được khách hàng yêu thích và đặt nhiều nhất
+      </p>
+    </div>
+
+    <div class="signature-horizontal" id="signatureContainer">
+      <!-- JavaScript sẽ render 5 card giống menu -->
+    </div>
+  </div>
+</section>
+
 <!-- MENU -->
 <section id="menu">
   <div class="menu-header">
@@ -71,6 +88,7 @@
 
     <!--Danh sách món ăn -->
   <div class="menu-grid" id="menuGrid"></div>
+  <div class="pagination" id="pagination"></div>
 </section>
 
 <!-- BOOKING -->
@@ -95,11 +113,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Số điện thoại</label>
-          <input type="tel" placeholder="0901 234 567" id="bk-phone"/>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" placeholder="email@gmail.com" id="bk-email"/>
+          <input type="tel" placeholder="0968 425 403" id="bk-phone"/>
         </div>
       </div>
       <div class="form-row">
@@ -153,36 +167,7 @@
 
 
 
-<!-- LOGIN MODAL -->
-<div class="overlay" id="loginOverlay">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('login')">✕</button>
-    <div class="modal-title">Chào mừng<br>trở lại</div>
-    <div class="modal-sub">Đăng nhập để quản lý đặt bàn và gọi món</div>
-    <div class="form-group"><label>Email</label><input type="email" placeholder="email@gmail.com" id="l-email"/></div>
-    <div class="form-group"><label>Mật khẩu</label><input type="password" placeholder="••••••••" id="l-pass"/></div>
-    <button class="form-submit" onclick="handleLogin()">Đăng Nhập</button>
-    <div class="modal-switch">Chưa có tài khoản? <a onclick="switchModal('login','register')">Đăng ký ngay</a></div>
-  </div>
-</div>
 
-<!-- REGISTER MODAL -->
-<div class="overlay" id="registerOverlay">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('register')">✕</button>
-    <div class="modal-title">Tạo tài<br>khoản mới</div>
-    <div class="modal-sub">Đăng ký để nhận ưu đãi thành viên độc quyền</div>
-    <div class="form-row">
-      <div class="form-group"><label>Họ</label><input type="text" placeholder="Nguyễn" id="r-last"/></div>
-      <div class="form-group"><label>Tên</label><input type="text" placeholder="Văn A" id="r-first"/></div>
-    </div>
-    <div class="form-group"><label>Số điện thoại</label><input type="tel" placeholder="0901 234 567" id="r-phone"/></div>
-    <div class="form-group"><label>Email</label><input type="email" placeholder="email@gmail.com" id="r-email"/></div>
-    <div class="form-group"><label>Mật khẩu</label><input type="password" placeholder="Tối thiểu 8 ký tự" id="r-pass"/></div>
-    <button class="form-submit" onclick="handleRegister()">Tạo Tài Khoản</button>
-    <div class="modal-switch">Đã có tài khoản? <a onclick="switchModal('register','login')">Đăng nhập</a></div>
-  </div>
-</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>

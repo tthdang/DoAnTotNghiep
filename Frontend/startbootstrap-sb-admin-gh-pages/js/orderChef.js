@@ -32,7 +32,7 @@ function renderColumn(elementId, orders) {
 
         if (item.orderItemStatus === "PENDING") {
             button = `<button onclick="updateStatus(${item.orderItemId}, 'COOKING')">Nhận món</button>`;
-            alert("")
+            
         } else if (item.orderItemStatus === "COOKING") {
             button = `<button onclick="updateStatus(${item.orderItemId}, 'READY')">Xong</button>`;
         } else if (item.orderItemStatus === "READY") {

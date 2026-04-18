@@ -44,7 +44,7 @@ public class OrderController {
         try {
             return ApiResponse.<OrderResponse>builder()
                     .result(orderService.createOrder(request.getUserPhone(), request.getTableId(), request.getItems()))
-                    .message("Order create successfully!")
+                    .message("Tạo order thành công!")
                     .build();
         } catch (Exception e) {
             return ApiResponse.<OrderResponse>builder()
@@ -59,7 +59,7 @@ public class OrderController {
         try{
             return ApiResponse.<OrderResponse>builder()
                     .result(orderService.addOrderItem(orderId, request.getItems()))
-                    .message("Add Item to Order successfully!")
+                    .message("Gọi món thành công!")
                     .build();
         } catch (Exception e){
             return ApiResponse.<OrderResponse>builder()

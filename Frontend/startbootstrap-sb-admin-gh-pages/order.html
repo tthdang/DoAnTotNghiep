@@ -14,7 +14,7 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#"><span>Beef</span>Chef</a>
+  <a class="nav-logo" href="homePage.html"><span>Beef</span>Chef</a>
   <ul class="nav-links">
     <li><a href="#menu">Thực đơn</a></li>
     <li><a href="#" onclick="showOrderStatus()">Trạng thái món ăn</a></li>
@@ -22,20 +22,6 @@
 
 </nav>
 
-<!-- HERO -->
-<!-- <section id="hero">
-  <span class="hero-badge">★ Fine Dining & Premium Grill ★</span>
-  <h1 class="hero-title">The Art of<br><em>Beef</em> &amp; Fire</h1>
-  <p class="hero-sub">Trải nghiệm ẩm thực bò thượng hạng — được nướng hoàn hảo từng miếng</p>
-  <div class="hero-ctas">
-    <button class="btn-hero-main" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Xem Thực Đơn</button>
-    <button class="btn-hero-sec" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Đặt Bàn Ngay</button>
-  </div>
-  <div class="hero-ornament">
-    <span>Khám phá</span>
-    <div class="scroll-line"></div>
-  </div>
-</section> -->
 
 <!-- MENU -->
 <section id="menu">
@@ -53,6 +39,7 @@
 
     <!--Danh sách món ăn -->
   <div class="menu-grid" id="menuGrid"></div>
+  <div class="pagination" id="pagination"></div>
 </section>
 
 <!-- CART FAB -->
@@ -98,7 +85,7 @@
     </div>
     
     <div class="modal-body" id="orderStatusContent">
-      <!-- Nội dung sẽ được JS chèn vào -->
+
     </div>
 
     <div class="modal-footer">

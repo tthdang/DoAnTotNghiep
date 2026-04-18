@@ -50,7 +50,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItems, Integer> 
         JOIN oi.product p
         JOIN oi.order o
         WHERE o.shift.shiftId = :shiftId
-            AND o.orderStatus = 'PAID'
+            AND oi.orderItemStatus = 'SERVED'
             AND o.createdAt BETWEEN :start AND :end
         GROUP BY p.productName, p.productImage
         ORDER BY SUM(oi.orderItemQuantity) DESC

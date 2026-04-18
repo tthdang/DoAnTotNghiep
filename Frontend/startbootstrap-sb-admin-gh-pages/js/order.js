@@ -5,7 +5,12 @@ const CATEGORIES_API = `${API_BASE}/categories`;
 let menuData = [];
 let categories = [];
 let cart = [];
-let orderStatusInterval = null;  
+//phân trang
+let currentPage = 1;
+const itemsPerPage = 6;
+let currentFilter = 'all';
+
+let orderStatusInterval = null;
 const POLLING_INTERVAL = 3000;    // 3 giây 
 
 // format giá
@@ -35,12 +40,13 @@ async function loadAllData() {
         // Load sản phẩm
         const prodRes = await fetch(PRODUCTS_API);
         if (!prodRes.ok) throw new Error("Lỗi load sản phẩm");
-        
-        let products = await prodRes.json();
-        products = products.filter(p => p.productStatus === 'AVAILABLE');
 
-        menuData = products.map(p => {
-            const catName = p.category?.categoryName?.trim() || "Khác";
+        let products = await prodRes.json();
+        let list = products.result;
+        list = list.filter(p => p.productStatus === 'AVAILABLE');
+
+        menuData = list.map(p => {
+            const catName = p.categoryName.trim() || "Khác";
             const slug = createSlug(catName);
 
             return {
@@ -90,7 +96,9 @@ function renderMenu(filter = 'all') {
     const container = document.getElementById('menuGrid');
     if (!container) return;
 
-    let filtered = menuData;
+    currentFilter = filter;
+
+    let filtered = menuData || [];
 
     if (filter !== 'all') {
         filtered = menuData.filter(item => item.cat === filter);
@@ -101,10 +109,17 @@ function renderMenu(filter = 'all') {
             <div style="grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--muted);">
                 <h3>Chưa có món ăn nào trong danh mục này</h3>
             </div>`;
+        document.getElementById('pagination').innerHTML = "";
         return;
     }
 
-    container.innerHTML = filtered.map(item => `
+    // PHÂN TRANG
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedItems = filtered.slice(start, end);
+
+    // RENDER MÓN
+    container.innerHTML = paginatedItems.map(item => `
         <div class="menu-card">
             <div class="menu-card-img-wrap">
                 <img class="menu-card-img" src="${item.img}" alt="${item.name}" loading="lazy"/>
@@ -122,19 +137,68 @@ function renderMenu(filter = 'all') {
             </div>
         </div>
     `).join('');
+
+    renderPagination(filtered.length);
+}
+
+function renderPagination(totalItems) {
+    const pagination = document.getElementById('pagination');
+    if (!pagination) return;
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    pagination.innerHTML = "";
+
+    // Prev
+    const prevBtn = document.createElement("button");
+    prevBtn.innerText = "«";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => {
+        currentPage--;
+        renderMenu(currentFilter);
+    };
+    pagination.appendChild(prevBtn);
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+
+        if (i === currentPage) btn.classList.add("active");
+
+        btn.onclick = () => {
+            currentPage = i;
+            renderMenu(currentFilter);
+        };
+
+        pagination.appendChild(btn);
+    }
+
+    // Next
+    const nextBtn = document.createElement("button");
+    nextBtn.innerText = "»";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => {
+        currentPage++;
+        renderMenu(currentFilter);
+    };
+    pagination.appendChild(nextBtn);
 }
 
 //   FILTER  
 function filterMenu(cat, el) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
+
+    currentPage = 1;
+
+
     renderMenu(cat);
 }
 
 //   INIT  
 document.addEventListener('DOMContentLoaded', () => {
     loadAllData();
-    
+
     const bkDate = document.getElementById('bk-date');
     if (bkDate) bkDate.min = new Date().toISOString().split('T')[0];
 });
@@ -154,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //thêm vào giỏ
 function addToCart(productId) {
     const product = menuData.find(item => item.id === productId);
-    
+
     if (!product) {
         showToast("Không tìm thấy món ăn!", "error");
         return;
@@ -170,14 +234,14 @@ function addToCart(productId) {
     const existing = cart.find(item => item.id === productId);
 
     if (existing) {
-        existing.quantity += 1;         
+        existing.quantity += 1;
     } else {
-        cart.push({ ...product, quantity: 1 });  
+        cart.push({ ...product, quantity: 1 });
     }
 
     //Cập nhật giao diện giỏ hàng
     updateCartUI();
-    
+
     showToast(`Đã thêm: ${product.name}`);
 }
 
@@ -241,22 +305,46 @@ function removeFromCart(productId) {
     updateCartUI();
 }
 
-// hàm thông báo
+// Hàm thông báo
 function showToast(message, type = "success") {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.style.display = 'block';
+    console.log(`[Toast Debug] Gọi showToast: "${message}" - type: ${type}`);
 
+    let container = document.getElementById('toast-container');
+    
+    if (!container) {
+        console.log("[Toast Debug] Tạo mới toast-container");
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast--${type}`;
+    toast.textContent = message;
+
+
+    container.appendChild(toast);
+    console.log(`[Toast Debug] Đã thêm toast vào DOM. Tổng toast hiện tại: ${container.children.length}`);
+
+    // Tự động ẩn sau 4 giây
     setTimeout(() => {
+        console.log("[Toast Debug] Bắt đầu ẩn toast");
+        toast.style.transition = 'opacity 0.4s ease';
         toast.style.opacity = '0';
-        setTimeout(() => { toast.style.display = 'none'; toast.style.opacity = '1'; }, 400);
-    }, 2500);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+                console.log("[Toast Debug] Đã xóa toast khỏi DOM");
+            }
+        }, 400);
+    }, 4000);
 }
 
 // ── ORDER PANEL ──
 function toggleOrderPanel() {
-  document.getElementById('orderPanel').classList.toggle('open');
+    document.getElementById('orderPanel').classList.toggle('open');
 }
 
 //   PLACE ORDER - SỬA THEO DTO BACKEND  
@@ -290,7 +378,7 @@ async function placeOrder() {
                 "Content-Type": "application/json"
                 // Không cần Authorization nếu bạn cho phép public
             },
-            body: JSON.stringify(requestBody)     
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -300,7 +388,7 @@ async function placeOrder() {
 
         const data = await response.json();
 
-        showToast(`🎉 ${data.message || "Đã gọi món thành công!"}`, "success");
+        showToast(` ${data.message || "Đã gọi món thành công!"}`, "success");
 
         // Reset giỏ hàng
         cart = [];
@@ -320,7 +408,7 @@ async function placeOrder() {
 }
 
 
-//   HIỂN THỊ TRẠNG THÁI MÓN ĂN (Realtime từ Server)  
+//   HIỂN THỊ TRẠNG THÁI MÓN ĂN
 async function showOrderStatus() {
     const currentOrderStr = localStorage.getItem("currentOrder");
     const modal = document.getElementById('orderStatusModal');
@@ -336,8 +424,24 @@ async function showOrderStatus() {
         return;
     }
 
-    const order = JSON.parse(currentOrderStr);
-    const orderId = order.orderId;
+    let order;
+    try {
+        order = JSON.parse(currentOrderStr);
+    } catch (e) {
+        console.error("JSON parse error:", e);
+        localStorage.removeItem("currentOrder"); // Xóa dữ liệu hỏng
+        content.innerHTML = `<p style="color:red;">Dữ liệu order bị hỏng. Vui lòng tạo order mới.</p>`;
+        modal.style.display = "flex";
+        return;
+    }
+
+    const orderId = order.orderId || order.id; // Một số API trả về id thay vì orderId
+
+    if (!orderId) {
+        content.innerHTML = `<p style="color:red;">Order không có ID hợp lệ.</p>`;
+        modal.style.display = "flex";
+        return;
+    }
 
     modal.style.display = "flex";
 
@@ -363,7 +467,7 @@ async function cancelOrderItem(orderId, orderItemId) {
 
     try {
         const response = await fetch(
-            `http://localhost:8081/beefchef/orders/${orderId}/${orderItemId}/cancel`, 
+            `http://localhost:8081/beefchef/orders/${orderId}/${orderItemId}/cancel`,
             {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" }
@@ -376,16 +480,22 @@ async function cancelOrderItem(orderId, orderItemId) {
         }
 
         const data = await response.json();
+        console.log("Response từ backend sau khi hủy: ", data);
 
         showToast("Đã hủy món thành công!", "success");
 
         // Cập nhật lại localStorage và refresh modal
         if (data.result) {
             localStorage.setItem("currentOrder", JSON.stringify(data.result));
+        } else if (data) {
+            localStorage.setItem("currentOrder", JSON.stringify(data));
         }
 
         // Tải lại modal để cập nhật giao diện
-        setTimeout(() => showOrderStatus(), 400);
+        const content = document.getElementById('orderStatusContent');
+        if (content && orderId) {
+            await loadOrderStatus(orderId, content);   // Load lại ngay lập tức
+        }
 
     } catch (error) {
         console.error(error);
@@ -393,8 +503,16 @@ async function cancelOrderItem(orderId, orderItemId) {
     }
 }
 
-// Hàm load & render trạng thái (dùng chung cho lần đầu và polling)
+// Hàm load & render trạng thái
 async function loadOrderStatus(orderId, content) {
+    if (!orderId || orderId === "undefined" || orderId === undefined) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:50px 20px; color:#e74c3c;">
+                <p>Không tìm thấy Order ID hợp lệ.</p>
+                <small>Vui lòng tạo order (xác nhận bàn) trước khi xem trạng thái.</small>
+            </div>`;
+        return;
+    }
     try {
         const response = await fetch(`http://localhost:8081/beefchef/orders/${orderId}`, {
             method: "GET",
@@ -455,10 +573,10 @@ async function loadOrderStatus(orderId, content) {
 }
 
 function getStatusText(status) {
-    switch(status) {
-       case "PENDING": return "Đang chờ";
+    switch (status) {
+        case "PENDING": return "Đang chờ";
         case "COOKING": return "Đang nấu";
-        case "READY":  return "Sẵn sàng";
+        case "READY": return "Sẵn sàng";
         case "SERVED": return "Đã phục vụ";
         case "CANCEL": return "Đã hủy";
         default: return status;
@@ -467,7 +585,7 @@ function getStatusText(status) {
 
 function closeOrderStatusModal() {
     const modal = document.getElementById('orderStatusModal');
-    
+
     // Dừng polling
     if (orderStatusInterval) {
         clearInterval(orderStatusInterval);
@@ -478,7 +596,7 @@ function closeOrderStatusModal() {
 }
 
 // Đóng modal khi click ra ngoài
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const modal = document.getElementById('orderStatusModal');
     if (e.target === modal) {
         closeOrderStatusModal();

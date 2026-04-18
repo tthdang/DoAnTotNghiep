@@ -27,10 +27,11 @@ async function loadProducts() {
         if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu");
         
         const data = await response.json();
+        const list = data.result;
 
         tableBody.innerHTML = "";
 
-        data.forEach(product => {
+        list.forEach(product => {
             const row = `
                 <tr>
                     <td>${product.productId}</td>
@@ -41,18 +42,18 @@ async function loadProducts() {
                     </td>
                     <td>${product.productName}</td>
                     <td>${product.productDescription || ''}</td>
-                    <td>${product.category?.categoryName || ''}</td>
+                    <td>${product.categoryName || ''}</td>
                     <td>${formatPrice(product.productPrice)}</td>
                     <td>${product.productStock}</td>
                     <td>${product.productSold}</td>
                     <td>
                         <span class="badge ${product.productStatus === 'AVAILABLE' ? 'bg-success' : 'bg-danger'}">
-                            ${product.productStatus}
+                            ${getStatusText(product.productStatus)}
                         </span>
                     </td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editProduct(${product.productId})">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.productId})">Delete</button>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct(${product.productId})">Sửa</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.productId})">Xoá</button>
                     </td>
                 </tr>
             `;
@@ -107,7 +108,13 @@ async function deleteProduct(id) {
     }
 }
 
-
+function getStatusText(status) {
+    switch (status) {
+        case "AVAILABLE": return "Còn hàng";
+        case "OUT_OF_STOCK": return "Hết hàng";
+        default: return status;
+    }
+}
 
 // Sửa sản phẩm 
 function editProduct(id) {

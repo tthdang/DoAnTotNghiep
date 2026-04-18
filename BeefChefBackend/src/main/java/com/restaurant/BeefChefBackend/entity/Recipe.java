@@ -21,6 +21,5 @@ public class Recipe {
     @ManyToOne
     @JoinColumn(name = "ingredient_id")
     private Ingredient ingredient;
-
     private Double quantityNeeded;
 }

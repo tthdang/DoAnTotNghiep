@@ -47,6 +47,8 @@ public class OrderService {
     @Autowired
     private ShiftService shiftService;
 
+    @Autowired
+    private IngredientBatchService ingredientBatchService;
 
     public OrderResponse toResponse( Orders orders){
         List<OrderItemResponse> itemResponses = orders.getItem().stream()
@@ -171,7 +173,7 @@ public class OrderService {
             );
 
             //update lại stock của product đã gọi
-            productService.decreaseStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
+//            productService.decreaseStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
 
             OrderItems item = new OrderItems();
             item.setOrder(order);
@@ -214,8 +216,9 @@ public class OrderService {
                 .toList();
     }
 
-    //add them order item moi
 
+
+    //add them order item moi
     public OrderResponse addOrderItem(Integer orderId, List<OrderItemRequest> list) {
         Orders order = getOrder(orderId);
 
@@ -230,8 +233,8 @@ public class OrderService {
                     () -> new RuntimeException("Product " + request.getProductId() + " not found!")
             );
 
-            //update lại stock của product đã gọi
-            productService.decreaseStock(request.getProductId(), request.getQuantity());
+            //update lại stock của product đã gọi tính theo nglieu
+            ingredientBatchService.deductIngredientsByProduct(product, request.getQuantity());
 
             OrderItems item = new OrderItems();
             item.setOrder(order);
@@ -255,6 +258,7 @@ public class OrderService {
 
         return toResponse(updatedOrder);
     }
+
     //update trạng thái order
     public OrderResponse updateOrderStatus(Integer id, UpdateOrderRequest request){
         Orders order = getOrder(id);
@@ -291,11 +295,17 @@ public class OrderService {
         Products product = orderItem.getProduct();
 
         // Hoàn lại stock
-        product.setProductStock(product.getProductStock() + orderItem.getOrderItemQuantity());
-        if (product.getProductStock() > 0) {
-            product.setProductStatus(ProductStatus.AVAILABLE);
+        if (product != null && orderItem.getOrderItemQuantity() > 0) {
+            // Hoàn nguyên liệu (quan trọng nhất)
+            ingredientBatchService.returnIngredientsByProduct(product, orderItem.getOrderItemQuantity());
+
+            // Hoàn stock sản phẩm
+//            product.setProductStock(product.getProductStock() + orderItem.getOrderItemQuantity());
+//            if (product.getProductStock() > 0) {
+//                product.setProductStatus(ProductStatus.AVAILABLE);
+//            }
+            productRepository.save(product);
         }
-        productRepository.save(product);
 
         // Cập nhật trạng thái hủy
         orderItem.setOrderItemStatus(OrderItemStatus.CANCEL);

@@ -1,5 +1,6 @@
 package com.restaurant.BeefChefBackend.dto.response;
 
+import com.restaurant.BeefChefBackend.entity.Recipe;
 import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,4 +24,5 @@ public class ProductResponse {
     private Integer productStock;
     private Integer productSold;
     private String categoryName;
+    private List<RecipeResponse> recipes;
 }

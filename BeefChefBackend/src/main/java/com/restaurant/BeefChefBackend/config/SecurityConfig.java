@@ -32,7 +32,8 @@ public class SecurityConfig {
             "/products/**",
             "/products/stockAndStatus/{id}",
             "/orders/**",
-
+            "/ingredients/**",
+            "/batch/**",
             "/tables/**",
             "/orderItem/**",
             "/orderItem/{orderItemId}",

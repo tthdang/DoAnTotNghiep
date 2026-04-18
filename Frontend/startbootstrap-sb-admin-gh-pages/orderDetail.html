@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Order</title>
+    
+    <link href="css/styles.css" rel="stylesheet">
+    <link href="css/table.css" rel="stylesheet">
+    <link href="css/order.css" rel="stylesheet">
+    
+    <style>
+        body { 
+            background: #f8f9fc; 
+            padding-top: 30px; 
+        }
+        .card {
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        .btnMarkPaid{
+            padding: 16px;
+            margin-right: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Chi tiết Order</h1>
+            <a href="tables.html" class="btn btn-secondary">← Quay lại danh sách bàn</a>
+        </div>
+
+        <div class="row">
+            <!-- Thông tin Order -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Thông tin Order</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Bàn:</strong> <span id="tableName" class="text-primary fw-bold"></span></p>
+                        <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+                        <p><strong>Khách hàng:</strong> <span id="customerName"></span></p>
+                        <p><strong>Thời gian tạo:</strong> <span id="createdAt"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="statusBadge" class="status-badge"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách món -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header py-3 d-flex justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách món đã gọi</h6>
+                        <h5>Tổng tiền: <span id="totalAmount" class="text-danger fw-bold"></span></h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th >Món ăn</th>
+                                    <th class="text-center" >Số lượng</th>
+                                    <th class="text-end" >Đơn giá</th>
+                                    <th class="text-center">Trạng thái</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button id="btnMarkPaid" class="btn btn-success btn-lg px-5">
+                        Thanh Toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/orderDetail.js"></script>
+    
+</body>
+</html>

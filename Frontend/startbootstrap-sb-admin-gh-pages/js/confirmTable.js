@@ -12,7 +12,9 @@ async function loadTables() {
             throw new Error(`Lỗi server: ${response.status}`);
         }
         
-        const tables = await response.json();
+        const data = await response.json();
+
+        const tables = data.result || [];
         
         select.innerHTML = '<option value="">Chọn bàn</option>';
         

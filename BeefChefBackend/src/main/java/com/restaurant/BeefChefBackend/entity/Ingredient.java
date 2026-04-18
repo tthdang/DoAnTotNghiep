@@ -1,10 +1,9 @@
 package com.restaurant.BeefChefBackend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -17,6 +16,8 @@ public class Ingredient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer ingredientId;
     private String ingredientName;
-    private String ingredientUnit;
-    private String ingredientDescription;
+    private String unit;
+
+    @OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL)
+    private List<IngredientBatch> batches;
 }

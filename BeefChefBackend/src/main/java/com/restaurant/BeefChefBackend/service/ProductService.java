@@ -3,17 +3,26 @@ package com.restaurant.BeefChefBackend.service;
 import com.restaurant.BeefChefBackend.dto.request.ProductCreateRequest;
 import com.restaurant.BeefChefBackend.dto.request.ProductUpdateRequest;
 import com.restaurant.BeefChefBackend.dto.request.ProductUpdateStockRequest;
+import com.restaurant.BeefChefBackend.dto.request.RecipeRequest;
 import com.restaurant.BeefChefBackend.dto.response.ProductResponse;
+import com.restaurant.BeefChefBackend.dto.response.RecipeResponse;
 import com.restaurant.BeefChefBackend.entity.Categories;
+import com.restaurant.BeefChefBackend.entity.Ingredient;
 import com.restaurant.BeefChefBackend.entity.Products;
+import com.restaurant.BeefChefBackend.entity.Recipe;
 import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import com.restaurant.BeefChefBackend.repository.CategoryRepository;
+import com.restaurant.BeefChefBackend.repository.IngredientRepository;
 import com.restaurant.BeefChefBackend.repository.ProductRepository;
+import com.restaurant.BeefChefBackend.repository.RecipeRepository;
+import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,24 +33,52 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private IngredientService ingredientService;
+
+    @Autowired
+    private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private RecipeRepository recipeRepository;
+
     private ProductResponse toResponse(Products product) {
+        int stock = calculateStock(product);
+
+        List<RecipeResponse> recipeResponses = product.getRecipes().stream()
+                .map(r -> RecipeResponse.builder()
+                        .ingredientId(r.getIngredient().getIngredientId())
+                        .ingredientName(r.getIngredient().getIngredientName())
+                        .quantityNeeded(r.getQuantityNeeded())
+                        .unit(r.getIngredient().getUnit())
+                        .build())
+                .distinct()
+                .toList();
+        ProductStatus status = ProductStatus.AVAILABLE;
+
+        if(stock < 1 ){
+            status = ProductStatus.OUT_OF_STOCK;
+        }
+
         return ProductResponse.builder()
                 .productId(product.getProductId())
                 .productName(product.getProductName())
                 .productPrice(product.getProductPrice())
                 .productImage(product.getProductImage())
                 .productDescription(product.getProductDescription())
-                .productStatus(product.getProductStatus())
-                .productStock(product.getProductStock())
+                .productStatus(status)
+                .productStock(stock)
                 .productSold(product.getProductSold())
                 .categoryName(product.getCategory().getCategoryName())
+                .recipes(recipeResponses)
                 .build();
     }
 
     //Create product
+    @Transactional
     public ProductResponse createProduct(ProductCreateRequest request){
-        Categories categories = categoryRepository.findById(request.getCategory().getCategoryId()).orElseThrow(
-                () -> new RuntimeException("Category not found!")
+        Categories categories = categoryRepository.findById(request.getCategoryId()).orElseThrow(
+                () -> new IllegalArgumentException("Không tìm thấy danh mục!")
         );
 
         Products products = new Products();
@@ -50,14 +87,31 @@ public class ProductService {
         products.setProductDescription(request.getProductDescription());
         products.setProductStatus(request.getProductStatus());
         products.setProductImage(request.getProductImage());
-        if (request.getProductStock() != null) {
-            products.setProductStock(request.getProductStock());
-        }else{
-            products.setProductStock(0);
-        }
         products.setProductSold(0);
         products.setCategory(categories);
+
+        //lưu trước lấy id
         Products save = productRepository.save(products);
+        System.out.println("Recipes: " + request.getRecipes());
+        if (request.getRecipes() != null && !request.getRecipes().isEmpty()) {
+            List<Recipe> recipeList = new ArrayList<>();
+            for (RecipeRequest r : request.getRecipes()) {
+                System.out.println("Checking ingredient: " + r.getIngredientId());
+                Ingredient ingredient = ingredientRepository.findById(r.getIngredientId())
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nguyên liệu!"));
+
+                Recipe recipe = new Recipe();
+                recipe.setProduct(save);
+                recipe.setIngredient(ingredient);
+                recipe.setQuantityNeeded(r.getQuantityNeeded());
+
+                recipeList.add(recipe);
+            }
+            recipeRepository.saveAll(recipeList);
+            save.setRecipes(recipeList);
+        }
+
+
         return toResponse(save);
     }
 
@@ -69,8 +123,11 @@ public class ProductService {
     }
 
     //Get All Products
-    public List<Products> getProducts(){
-        return productRepository.findAll();
+    public List<ProductResponse> getProducts(){
+        return productRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     //Update Product
@@ -100,26 +157,46 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    // Update lại stock
-    @Transactional
-    public Products decreaseStock(Integer productId, Integer quantity) {
-        Products product = productRepository.findByIdForUpdate(productId);
+//    // Update lại stock
+//    @Transactional
+//    public Products decreaseStock(Integer productId, Integer quantity) {
+//        Products product = productRepository.findByIdForUpdate(productId);
+//
+//        if (product == null) {
+//            throw new RuntimeException("Product not found");
+//        }
+//
+//        if (product.getProductStock() < quantity) {
+//            throw new IllegalArgumentException(
+//                    "Món " + product.getProductName() +
+//                            " chỉ còn " + product.getProductStock() + " phần!"
+//            );
+//        }
+//        product.setProductStock(product.getProductStock() - quantity);
+//        if(product.getProductStock() == 0){
+//            product.setProductStatus(ProductStatus.OUT_OF_STOCK);
+//        }
+//        return productRepository.save(product);
+//    }
 
-        if (product == null) {
-            throw new RuntimeException("Product not found");
-        }
+    //tính sl còn lại của món ăn
+    public int calculateStock(Products product) {
+        int stock = Integer.MAX_VALUE;
+        for (Recipe recipe : product.getRecipes()) {
+            //sl nglieu dùng đc
+            double available = ingredientService.getAvailable(recipe.getIngredient());
+            double needed = recipe.getQuantityNeeded();
 
-        if (product.getProductStock() < quantity) {
-            throw new IllegalArgumentException(
-                    "Món " + product.getProductName() +
-                            " chỉ còn " + product.getProductStock() + " phần!"
-            );
+            System.out.println("----");
+            System.out.println("Nguyên liệu: " + recipe.getIngredient().getIngredientName());
+            System.out.println("Available: " + available);
+            System.out.println("Needed: " + needed);
+            // tính sl có thể làm đc
+            int possible = (int) (available / recipe.getQuantityNeeded());
+            System.out.println("Possible: " + possible);
+            stock = Math.min(stock, possible);
         }
-        product.setProductStock(product.getProductStock() - quantity);
-        if(product.getProductStock() == 0){
-            product.setProductStatus(ProductStatus.OUT_OF_STOCK);
-        }
-        return productRepository.save(product);
+        return stock;
     }
 
     //Get top 5 san pham ban chay nhat
