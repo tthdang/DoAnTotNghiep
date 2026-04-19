@@ -15,7 +15,7 @@ async function loadOrderDetail() {
         if (!res.ok) throw new Error("Lỗi khi lấy order");
 
         const data = await res.json();
-        currentOrder = data.result;
+        currentOrder = data.result || data;
         console.log(currentOrder)
         renderOrder(currentOrder);
 
@@ -30,29 +30,58 @@ function renderOrder(order) {
     document.getElementById('tableName').textContent = order.tableName || `Bàn ${order.tableId}`;
     document.getElementById('orderId').textContent = `#${order.orderId}`;
     document.getElementById('customerName').textContent = order.userName || "Khách vãng lai";
+    document.getElementById('userRank').textContent = order.userRank || 'Không có hạng';
     document.getElementById('createdAt').textContent = formatDateTime(order.createdAt);
-
-
 
     // Trạng thái
     const statusEl = document.getElementById('statusBadge');
     statusEl.textContent = getStatusText(order.orderStatus);
     statusEl.className = `status-badge ${getStatusClass(order.orderStatus)}`;
 
+    // Hiển thị tiền
+    const total = Number(order.orderTotal || 0);
+    const discountAmount = Number(order.discountAmount || 0);
+    const finalAmount = Number(order.finalAmount || total);
+    const userRankDiscount = Number(order.userRankDiscount || 0);
+
     // Tổng tiền
     document.getElementById('totalAmount').textContent =
-        Number(order.orderTotal || 0).toLocaleString('vi-VN') + ' VNĐ';
+        total.toLocaleString('vi-VN') + ' VNĐ';
+
+    // Giảm giá
+    const discountEl = document.getElementById('discountAmount');
+    if (discountAmount > 0) {
+        discountEl.textContent = `- ${discountAmount.toLocaleString('vi-VN')} VNĐ`;
+        discountEl.className = "text-success";
+    } else {
+        discountEl.textContent = "0 VNĐ";
+        discountEl.className = "text-muted";
+    }
+
+    const discountRank = document.getElementById('userRankDiscount');
+    if (userRankDiscount > 0) {
+        discountRank.textContent = `(- ${userRankDiscount.toLocaleString('vi-VN')} VNĐ)`;
+        discountRank.className = "text-success";
+    } else {
+        discountRank.textContent = "0 VNĐ";
+        discountRank.className = "text-muted";
+    }
+
+    // Thành tiền
+    document.getElementById('finalAmount').textContent =
+        finalAmount.toLocaleString('vi-VN') + ' VNĐ';
 
     // Danh sách món
     renderItems(order.items || []);
 }
 
+//hiển thị ds item
 function renderItems(items) {
     const tbody = document.getElementById('itemsBody');
     tbody.innerHTML = '';
 
     if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Chưa có món nào được gọi</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4">Chưa có món nào được gọi</td></tr>`;
         return;
     }
 
@@ -60,7 +89,7 @@ function renderItems(items) {
         const price = Number(item.orderItemPrice || 0);
         const qty = item.orderItemQuantity || 1;
         const total = price * qty;
-        
+
 
         const statusText = getStatusOrderItemText(item.orderItemStatus);
         const statusClass = getStatusOrderItemClass(item.orderItemStatus);
@@ -80,6 +109,46 @@ function renderItems(items) {
         tbody.appendChild(tr);
     });
 }
+
+// áp dụng khuyến mãi
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.promo-btn').addEventListener('click', async () => {
+        const code = document.getElementById('promo').value.trim();
+        const promoInput = document.getElementById('promo');
+
+        if (!code) {
+            alert("Vui lòng nhập mã khuyến mãi!");
+            return;
+        }
+
+        if (!currentOrder || !currentOrder.orderId) {
+            alert("Không tìm thấy thông tin đơn hàng!");
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8081/beefchef/orders/${currentOrder.orderId}/applyPromotion?code=${encodeURIComponent(code)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Áp dụng mã khuyến mãi thành công!");
+                promoInput.value = '';
+                loadOrderDetail();
+            } else {
+                alert(data.message || "Áp dụng mã thất bại!");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi kết nối!");
+        }
+    });
+})
+
+
 
 function getStatusText(status) {
     switch (status) {
@@ -164,7 +233,7 @@ document.addEventListener('click', async function (e) {
                 if (res.ok) {
                     alert("Cập nhật thanh toán thành công!");
                     loadOrderDetail();
-                
+
                 } else {
                     alert("Cập nhật thanh toán thất bại!");
                 }

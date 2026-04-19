@@ -71,12 +71,17 @@ public class OrderService {
                 .createdAt(orders.getCreatedAt())
                 .userId(orders.getUser().getUserId())
                 .userName(orders.getUser().getUserLastname() + " " + orders.getUser().getUserFirstname())
+                .userRank(orders.getUser().getRank().getRankName())
+                .userRankDiscount(orders.getUserRankDiscount())
                 .orderStatus(orders.getOrderStatus())
                 .orderTotal(orders.getOrderTotal())
                 .orderCreatedAt(orders.getCreatedAt())
                 .items(itemResponses)
                 .shift(orders.getShift())
                 .paidAt(orders.getPaidAt())
+                .discountAmount(orders.getDiscountAmount())
+                .finalAmount(orders.getFinalAmount())
+                .promotionCode(orders.getPromotion() != null ? orders.getPromotion().getCode() : null)
                 .build();
     }
 //
@@ -142,7 +147,7 @@ public class OrderService {
 
     //create Order
     @Transactional
-    public OrderResponse createOrder(String userPhone, Integer tableId, List<OrderItemRequest> lists){
+    public OrderResponse createOrder(String userPhone, Integer tableId){
         Orders order = new Orders();
         order.setOrderStatus(OrderStatus.ORDERING);
         order.setCreatedAt(LocalDateTime.now()); // set thoi gian tao order
@@ -158,6 +163,7 @@ public class OrderService {
                 () -> new RuntimeException("Table not found!")
         );
 
+
         if(table.getTableStatus() == TableStatus.OCCUPIED){
             throw  new IllegalStateException("Bàn đã được sử dụng hoặc đặt không thể xếp được");
         }
@@ -165,36 +171,14 @@ public class OrderService {
         table.setTableStatus(TableStatus.OCCUPIED);//set trạng thái bàn
 
         List<OrderItems> orderItems = new ArrayList<>();
-        //Tao total
-        BigDecimal total = BigDecimal.ZERO;
-        for (OrderItemRequest orderItemRequest : lists){
-            Products product = productRepository.findById(orderItemRequest.getProductId()).orElseThrow(
-                    () -> new IllegalStateException("Product " + orderItemRequest.getProductId() + " not found!")
-            );
-
-            //update lại stock của product đã gọi
-//            productService.decreaseStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
-
-            OrderItems item = new OrderItems();
-            item.setOrder(order);
-            item.setProduct(product);
-            item.setOrderItemQuantity(orderItemRequest.getQuantity());
-            item.setOrderItemPrice(product.getProductPrice());
-            item.setOrderItemStatus(OrderItemStatus.PENDING);
-            //tinh tien
-            if (item.getOrderItemStatus() != OrderItemStatus.CANCEL) { //check status order item
-                total = total.add(
-                        product.getProductPrice().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()))
-                );
-            }
-            //add vao list
-            orderItems.add(item);
-        }
 
         order.setTable(table);
         order.setUser(user);
         order.setItem(orderItems);
-        order.setOrderTotal(total);
+        order.setOrderTotal(BigDecimal.ZERO);
+        order.setDiscountAmount(BigDecimal.ZERO);
+        order.setFinalAmount(BigDecimal.ZERO);
+
 
         Orders save = orderRepository.save(order);
 
@@ -254,6 +238,7 @@ public class OrderService {
         }
         order.setOrderStatus(OrderStatus.ORDERING);
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
+//        order.setFinalAmount(order.getOrderTotal());
         Orders updatedOrder = orderRepository.save(order);
 
         return toResponse(updatedOrder);
@@ -296,14 +281,8 @@ public class OrderService {
 
         // Hoàn lại stock
         if (product != null && orderItem.getOrderItemQuantity() > 0) {
-            // Hoàn nguyên liệu (quan trọng nhất)
+            // Hoàn nguyên liệu
             ingredientBatchService.returnIngredientsByProduct(product, orderItem.getOrderItemQuantity());
-
-            // Hoàn stock sản phẩm
-//            product.setProductStock(product.getProductStock() + orderItem.getOrderItemQuantity());
-//            if (product.getProductStock() > 0) {
-//                product.setProductStatus(ProductStatus.AVAILABLE);
-//            }
             productRepository.save(product);
         }
 
@@ -321,6 +300,7 @@ public class OrderService {
         if (order.getOrderTotal().compareTo(BigDecimal.ZERO) < 0) {
             order.setOrderTotal(BigDecimal.ZERO);
         }
+
         Orders save = orderRepository.save(order);
 
         return toResponse(save);
@@ -337,32 +317,43 @@ public class OrderService {
         if(order.getOrderStatus() != OrderStatus.SERVED){
             throw new IllegalStateException("Order chưa được hoàn thành tât cả các món thì không được thanh toán!");
         }
+
+        BigDecimal amount = order.getFinalAmount();
+        if (amount == null) {
+            amount = order.getOrderTotal();
+        }
+
         order.setOrderStatus(OrderStatus.PAID);
         order.setPaidAt(LocalDateTime.now());
+
         Orders save = orderRepository.save(order);
+
 
         //cong diem va cap nhat lai diem/rank cho user
         User user = save.getUser();
         if(user != null){
-            BigDecimal orderTotal = save.getOrderTotal();
+            String phone = user.getUserPhone();
+            //ktra xem co phai khach vang lai ko
+            if (!"0968425402".equals(phone)){
+                //xy ly 10k = 1d
+                int earnedPoint = amount
+                        .divide(BigDecimal.valueOf(10000))
+                        .intValue();
 
-            //xy ly 1000k = 1d
-            int earnedPoint = orderTotal
-                    .divide(BigDecimal.valueOf(10000))
-                    .intValue();
+                user.setUserPoint(user.getUserPoint() + earnedPoint);
+                userService.updateRankForUser(user);
+                userRepository.save(user);
+            }
 
-            user.setUserPoint(user.getUserPoint() + earnedPoint);
-            userService.updateRankForUser(user);
-            userRepository.save(user);
+
         }
 
+        //cập nhật lai trạng thái bàn
         Tables table = save.getTable();
         if(table != null){
             table.setTableStatus(TableStatus.AVAILABLE);
             tableRepository.save(table);
         }
-
-
         return toResponse(save);
     }
 
@@ -374,8 +365,6 @@ public class OrderService {
     //tu dong cap nhat trang thai order
     public void autoUpdateOrderStatus(Integer orderId){
         Orders order = getOrder(orderId);
-
-
 
         //bỏ qua cancel
         boolean allItemsServed = order.getItem().stream()

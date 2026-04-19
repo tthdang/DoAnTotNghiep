@@ -11290,3 +11290,64 @@ body {
 #datatablesSimple td:nth-child(8) { width: 90px; text-align: center;}   /* Đã bán */
 #datatablesSimple td:nth-child(9) { width: 110px; font-size: 20px; text-align: center;}  /* Trạng thái */
 #datatablesSimple td:nth-child(10){ width: 130px; text-align: center;}  /* Hành động */
+
+
+
+
+#datatablesPromotion td {
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+
+#datatablesPromotion th {
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    text-align: center
+}
+
+
+#datatablesPromotion td:nth-child(2) {
+    width: 150px;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+#datatablesPromotion th:nth-child(4) {
+    width: 90px; 
+    white-space: normal;    
+    word-break: break-word; 
+    line-height: 1.5;
+    padding: 5px;
+    text-align: center;
+}
+
+#datatablesPromotion td:nth-child(4) {
+    width: 90px; 
+    white-space: normal;    
+    word-break: break-word; 
+    line-height: 1.5;
+    font-size: 17px;
+    padding: 5px;
+    text-align: center;
+}
+
+/* Tên món */
+#datatablesPromotion td:nth-child(3) {
+    width: 100px;
+    font-weight: 500;
+    font-size: 17px;
+    text-align: center;
+}
+
+
+#datatablesPromotion td:nth-child(1) { width: 30px; text-align: center; }   
+#datatablesPromotion td:nth-child(5) { width: 110px;font-weight: bold; text-align: center;} 
+#datatablesPromotion td:nth-child(6) { width: 110px;  text-align: right;}  
+#datatablesPromotion td:nth-child(7) { width: 110px;font-weight: bold; text-align: center;}   
+#datatablesPromotion td:nth-child(8) { width: 120px; text-align: center;} 
+#datatablesPromotion td:nth-child(9) { width: 120px; text-align: center;} 
+#datatablesPromotion td:nth-child(10){ width: 50px; text-align: center;} 
+#datatablesPromotion td:nth-child(11){ width: 50px;  text-align: center;} 
+#datatablesPromotion td:nth-child(12){ width: 80px; font-size: 18px; text-align: center;} 
+#datatablesPromotion td:nth-child(13){ width: 120px; text-align: center;} 

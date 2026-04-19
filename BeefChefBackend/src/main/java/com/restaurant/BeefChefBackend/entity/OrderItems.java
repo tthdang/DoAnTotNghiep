@@ -34,5 +34,11 @@ public class OrderItems {
 
     private LocalDateTime orderItemCreatedAt;
 
+    private BigDecimal discountAmount;
+    private BigDecimal finalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
 
 }

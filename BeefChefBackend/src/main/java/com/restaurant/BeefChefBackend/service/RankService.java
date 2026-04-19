@@ -20,6 +20,7 @@ public class RankService {
                 .rankId(rank.getRankId())
                 .rankName(rank.getRankName())
                 .rankMinPoint(rank.getRankMinPoint())
+                .discount(rank.getDiscount())
                 .build();
     }
 
@@ -28,6 +29,7 @@ public class RankService {
         Ranks rank = new Ranks();
         rank.setRankName(request.getRankName());
         rank.setRankMinPoint(request.getRankMinPoint());
+        rank.setDiscount(request.getDiscount());
         Ranks save = rankRepository.save(rank);
         return toResponse(save);
     }
@@ -52,7 +54,7 @@ public class RankService {
         Ranks rank = getRankById(id);
         rank.setRankName(request.getRankName());
         rank.setRankMinPoint(request.getRankMinPoint());
-
+        rank.setDiscount(request.getDiscount());
         Ranks save = rankRepository.save(rank);
         return toResponse(save);
     }

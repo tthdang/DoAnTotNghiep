@@ -41,6 +41,16 @@ public class Orders {
 
     private LocalDateTime paidAt;
 
+    private BigDecimal userRankDiscount;
+
+    private BigDecimal discountAmount;
+
+    private BigDecimal finalAmount;
+
+    @ManyToOne
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
+
     @ManyToOne
     @JoinColumn(name = "shiftId")
     private Shift shift;

@@ -38,8 +38,8 @@ async function loadBatch() {
                     <td>${batch.ingredientName}</td>
                     <td>${batch.quantityImported}</td>
                     <td>${batch.quantityRemaining}</td>
-                    <td>${batch.importDate}</td>
-                    <td>${batch.expiryDate}</td>
+                    <td>${formatDateTime(batch.importDate)}</td>
+                    <td>${formatDateTime(batch.expiryDate)}</td>
                     <td>${formatPrice(batch.batchPrice)}</td>
                     <td >
                         <span style="font-size: 14px" class="badge 
@@ -83,6 +83,15 @@ function getStatusText(status) {
         case "EXPIRED": return "Đã hết hạn";
         default: return status;
     }
+}
+
+function formatDateTime(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    return date.toLocaleString('vi-VN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
 }
 
 // // ===== Xoá sản phẩm =====

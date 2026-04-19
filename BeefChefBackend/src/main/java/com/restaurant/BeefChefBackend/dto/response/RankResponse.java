@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -18,5 +19,6 @@ public class RankResponse {
     private Integer rankId;
     private String rankName;
     private Long rankMinPoint;
+    private BigDecimal discount;
     
 }

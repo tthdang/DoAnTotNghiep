@@ -22,10 +22,16 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private Integer userId;
     private String userName;
+    private String userRank;
     private OrderStatus orderStatus;
     private BigDecimal orderTotal;
     private LocalDateTime orderCreatedAt;
     private Shift shift;
+    private BigDecimal userRankDiscount;
+    private BigDecimal discountAmount;
+    private BigDecimal finalAmount;
+    private String promotionCode;
     private LocalDateTime paidAt;
     private List<OrderItemResponse> items;
+
 }

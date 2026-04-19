@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -18,6 +19,7 @@ public class Ranks {
     private Integer rankId;
     private String rankName;
     private Long rankMinPoint;
+    private BigDecimal discount;
     @OneToMany(mappedBy = "rank")
     @JsonIgnore
     private Set<User> userId;

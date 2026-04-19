@@ -136,6 +136,7 @@ function renderMenu(filter = 'all') {
     renderPagination(filtered.length);
 }
 
+//phan trang
 function renderPagination(totalItems) {
     const pagination = document.getElementById('pagination');
     if (!pagination) return;
@@ -209,11 +210,10 @@ async function loadTop5Dishes() {
     } catch (error) {
         console.error("Lỗi load Top 5 dishes:", error);
 
-        // Nếu lỗi thì dùng dữ liệu dự phòng (fallback)
-        signatureDishes = [
-            { rank: 1, name: "Australian Ribeye Steak", desc: "Thăn ngoại Úc 300g...", price: 389000, image: "https://via.placeholder.com/300x210?text=Ribeye" },
-            // ... có thể thêm thêm 4 món fallback
-        ];
+        // signatureDishes = [
+        //     { rank: 1, name: "Australian Ribeye Steak", desc: "Thăn ngoại Úc 300g...", price: 389000, image: "https://via.placeholder.com/300x210?text=Ribeye" },
+            
+        // ];
         renderSignatureDishes();
     }
 }
@@ -235,10 +235,10 @@ function renderSignatureDishes() {
                 <div class="signature-info">
                     <h3 class="signature-name">${dish.name}</h3>
                     <p class="signature-desc">${dish.desc}</p>
-                    <div class="menu-card-footer">
+                </div>
+                <div class="menu-card-footer">
                         <div class="menu-card-sold">Đã bán: ${dish.sold}</div>
                         <div class="signature-price">${dish.price.toLocaleString('vi-VN')}đ </div>
-                    </div>
                 </div>
                 
             </div>
@@ -252,8 +252,8 @@ function renderSignatureDishes() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Page loaded");
 
-    loadAllData();        // Load menu + categories
-    loadTop5Dishes();     // ← Thêm dòng này để lấy Top 5 từ API
+    loadAllData();        
+    loadTop5Dishes();     
 
     // Ngày đặt bàn
     const bkDate = document.getElementById('bk-date');

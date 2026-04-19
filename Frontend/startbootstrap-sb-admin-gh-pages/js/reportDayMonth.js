@@ -173,8 +173,8 @@ async function loadProducts() {
                         </span>
                     </td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editProduct(${product.productId})">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.productId})">Delete</button>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct(${product.productId})">Sửa</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.productId})">Xoá</button>
                     </td>
                 </tr>
             `;

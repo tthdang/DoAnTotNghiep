@@ -28,7 +28,6 @@ public class SecurityConfig {
             "/auth/login", "/auth/introspect",
             //test
             "/categories",
-            "/categories/{id}",
             "/products/**",
             "/products/stockAndStatus/{id}",
             "/orders/**",
@@ -39,7 +38,9 @@ public class SecurityConfig {
             "/orderItem/{orderItemId}",
             "/shift/**",
             "/report/**",
-            "/rank/**"
+            "/rank/**",
+            "/promotion/**"
+
     };
 
 //    private final String[] HOME_ENDPONT = {"/categories",

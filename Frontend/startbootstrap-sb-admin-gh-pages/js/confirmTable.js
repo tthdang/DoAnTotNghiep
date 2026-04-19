@@ -66,8 +66,7 @@ async function confirmOrder() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 tableId: parseInt(tableId),
-                userPhone: phone,
-                items: []
+                userPhone: phone
             })
         });
 
@@ -104,7 +103,7 @@ async function confirmOrder() {
     } catch (error) {
         console.error("Lỗi:", error);
         alert("Có lỗi xảy ra: " + error.message);
-        window.location.href = "404.html"
+        // window.location.href = "confirmTable.html"
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;

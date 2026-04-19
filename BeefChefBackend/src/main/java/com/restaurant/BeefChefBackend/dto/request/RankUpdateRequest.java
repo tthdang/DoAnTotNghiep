@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -12,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class RankUpdateRequest {
     private String rankName;
     private Long rankMinPoint;
+    private BigDecimal discount;
 }

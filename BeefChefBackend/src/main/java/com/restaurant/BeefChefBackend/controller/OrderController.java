@@ -10,6 +10,7 @@ import com.restaurant.BeefChefBackend.entity.OrderItems;
 import com.restaurant.BeefChefBackend.entity.Orders;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
 import com.restaurant.BeefChefBackend.service.OrderService;
+import com.restaurant.BeefChefBackend.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ import java.util.List;
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private PromotionService promotionService;
 
 
 //    private Integer orderId;
@@ -43,7 +47,7 @@ public class OrderController {
 
         try {
             return ApiResponse.<OrderResponse>builder()
-                    .result(orderService.createOrder(request.getUserPhone(), request.getTableId(), request.getItems()))
+                    .result(orderService.createOrder(request.getUserPhone(), request.getTableId()))
                     .message("Tạo order thành công!")
                     .build();
         } catch (Exception e) {
@@ -140,6 +144,23 @@ public class OrderController {
         } catch (Exception e) {
             return ApiResponse.<OrderResponse>builder()
                     .message("Lỗi khi huỷ món ăn: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @PostMapping("/{orderId}/applyPromotion")
+    public ApiResponse<OrderResponse> applyPromotion(@PathVariable Integer orderId, @RequestParam String code) {
+
+        try{
+            promotionService.applyPromotion(orderId, code);
+            Orders order = orderService.getOrder(orderId);
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Áp dụng mã khuyến mãi thành công!")
+                    .result(orderService.toResponse(order))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<OrderResponse>builder()
+                    .message("Áp dụng mã khuyến mãi không thành công: " + e.getMessage())
                     .build();
         }
     }
