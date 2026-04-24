@@ -37,7 +37,7 @@ async function loadAllData() {
 
         let products = await prodRes.json();
         let list = products.result;
-        list = list.filter(p => p.productStatus === 'AVAILABLE');
+        // list = list.filter(p => p.productStatus === 'AVAILABLE');
 
         menuData = list.map(p => {
             const catName = p.categoryName.trim() || "Khác";

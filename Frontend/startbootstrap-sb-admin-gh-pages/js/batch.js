@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //load batch
 let dataTableInstance = null;
+let countAvailable = 0;
+let countNear = 0;
+let countExpired = 0;
 
 async function loadBatch() {
     const tableBody = document.getElementById("batchTableBody");
@@ -44,13 +47,17 @@ async function loadBatch() {
                     <td >
                         <span style="font-size: 14px" class="badge 
                             ${batch.status === 'AVAILABLE' ? 'bg-success' :
-                            batch.status === 'NEAR_EXPIRY' ? 'bg-warning text-dark' :'bg-danger'}">
+                                batch.status === 'NEAR_EXPIRY' ? 'bg-warning text-dark' : 
+                                batch.status === 'EXPIRED' ? 'bg-danger' : 'bg-secondary'}">
                             ${getStatusText(batch.status)}
                         </span>
                     </td>
                     
                 </tr>
             `;
+            if (batch.status === "AVAILABLE") countAvailable++;
+            else if (batch.status === "NEAR_EXPIRY") countNear++;
+            else if (batch.status === "EXPIRED") countExpired++;
             tableBody.innerHTML += row;
         });
 
@@ -65,6 +72,10 @@ async function loadBatch() {
             perPage: 10,
             perPageSelect: [5, 10, 20, 50]
         });
+
+        document.getElementById("countAvailable").innerText = countAvailable;
+        document.getElementById("countNear").innerText = countNear;
+        document.getElementById("countExpired").innerText = countExpired;
 
     } catch (error) {
         console.error("Lỗi loadBatch:", error);
@@ -81,6 +92,7 @@ function getStatusText(status) {
         case "AVAILABLE": return "Còn hạn";
         case "NEAR_EXPIRY": return "Sắp hết hạn";
         case "EXPIRED": return "Đã hết hạn";
+        case "OUT_OF_STOCK": return "Đã hết nguyên liệu";
         default: return status;
     }
 }

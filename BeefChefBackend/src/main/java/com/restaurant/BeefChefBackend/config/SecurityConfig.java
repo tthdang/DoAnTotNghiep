@@ -39,7 +39,9 @@ public class SecurityConfig {
             "/shift/**",
             "/report/**",
             "/rank/**",
-            "/promotion/**"
+            "/promotion/**",
+            "/chat/**",
+            "/reservation/**"
 
     };
 

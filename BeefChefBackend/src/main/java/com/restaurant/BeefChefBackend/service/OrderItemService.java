@@ -11,6 +11,7 @@ import com.restaurant.BeefChefBackend.enums.OrderStatus;
 import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import com.restaurant.BeefChefBackend.repository.OrderItemRepository;
 import com.restaurant.BeefChefBackend.repository.OrderRepository;
+import com.restaurant.BeefChefBackend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,9 @@ public class OrderItemService {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     private OrderService orderService;
@@ -81,7 +85,7 @@ public class OrderItemService {
 
         OrderItems save = new OrderItems();
 
-        Products product = productService.getProduct(orderItem.getProduct().getProductId());
+        Products product = orderItem.getProduct();
 
 
         if(lastStatus ==  OrderItemStatus.PENDING && nextStatus == OrderItemStatus.COOKING){

@@ -6,6 +6,14 @@ server:
 spring:
   application:
     name: BeefChefBackend
+  ai:
+    openai:
+      api-key: "AIzaSyArr_OU6E6P75IfzwxiNVbB2LMP5TA9LtE"
+      chat:
+        base-url: https://generativelanguage.googleapis.com
+        completions-path: /v1beta/openai/chat/completions
+        options:
+          model: gemini-2.5-flash
 
   datasource:
     url: "jdbc:mysql://localhost:3307/beef_chef?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh"

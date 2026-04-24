@@ -47,8 +47,18 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    private Products getProduct(@PathVariable Integer id){
-        return service.getProduct(id);
+    private ApiResponse<ProductResponse> getProduct(@PathVariable Integer id){
+
+        try{
+            return ApiResponse.<ProductResponse>builder()
+                    .message("Lấy món ăn thành công!")
+                    .result(service.getProduct(id))
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<ProductResponse>builder()
+                    .message("Lấy món ăn tht bại: "+e.getMessage())
+                    .build();
+        }
     }
 
     @PutMapping("/{id}")

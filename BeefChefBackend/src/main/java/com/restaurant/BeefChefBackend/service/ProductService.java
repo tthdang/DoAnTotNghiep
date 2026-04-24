@@ -116,10 +116,11 @@ public class ProductService {
     }
 
     //Get product by id
-    public Products getProduct(Integer id){
-        return productRepository.findById(id).orElseThrow(
+    public ProductResponse getProduct(Integer id){
+        Products products = productRepository.findById(id).orElseThrow(
                 () -> new RuntimeException("Product not found!")
         );
+        return toResponse(products);
     }
 
     //Get All Products
@@ -137,7 +138,9 @@ public class ProductService {
                 () -> new RuntimeException("Category not found!")
         );
 
-        Products products = getProduct(id);
+        Products products = productRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Product not found!")
+        );
 
         products.setProductName(request.getProductName());
         products.setProductPrice(request.getProductPrice());
@@ -157,31 +160,13 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-//    // Update lại stock
-//    @Transactional
-//    public Products decreaseStock(Integer productId, Integer quantity) {
-//        Products product = productRepository.findByIdForUpdate(productId);
-//
-//        if (product == null) {
-//            throw new RuntimeException("Product not found");
-//        }
-//
-//        if (product.getProductStock() < quantity) {
-//            throw new IllegalArgumentException(
-//                    "Món " + product.getProductName() +
-//                            " chỉ còn " + product.getProductStock() + " phần!"
-//            );
-//        }
-//        product.setProductStock(product.getProductStock() - quantity);
-//        if(product.getProductStock() == 0){
-//            product.setProductStatus(ProductStatus.OUT_OF_STOCK);
-//        }
-//        return productRepository.save(product);
-//    }
 
     //tính sl còn lại của món ăn
     public int calculateStock(Products product) {
         int stock = Integer.MAX_VALUE;
+        if (product.getRecipes() == null || product.getRecipes().isEmpty()) {
+            return 0;
+        }
         for (Recipe recipe : product.getRecipes()) {
             //sl nglieu dùng đc
             double available = ingredientService.getAvailable(recipe.getIngredient());
@@ -197,6 +182,12 @@ public class ProductService {
             stock = Math.min(stock, possible);
         }
         return stock;
+    }
+
+    public void updateProductStatus(Products product) {
+        int stock = calculateStock(product);
+        product.setProductStatus(stock <= 0 ? ProductStatus.OUT_OF_STOCK : ProductStatus.AVAILABLE);
+        productRepository.save(product);
     }
 
     //Get top 5 san pham ban chay nhat

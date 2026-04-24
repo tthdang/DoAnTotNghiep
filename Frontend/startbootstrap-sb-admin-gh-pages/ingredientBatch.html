@@ -11,6 +11,45 @@
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        #tong {
+            padding: 20px 0px 0px 0px;
+        }
+
+        .badge {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge span {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            transition: 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #ffc107, #ffca2c);
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        }
+    </style>
 </head>
 
 <body class="sb-nav-fixed">
@@ -94,7 +133,15 @@
                         </a>
                         <a class="nav-link" href="productAdmin.html">
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                            Món ăn
+                            Sản phẩm
+                        </a>
+                        <a class="nav-link" href="promotion.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chair"></i></div>
+                            Khuyến mãi
+                        </a>
+                        <a class="nav-link" href="reservation.html">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chair"></i></div>
+                            Đơn đặt bàn
                         </a>
                     </div>
                 </div>
@@ -126,9 +173,17 @@
                     <div class="card mb-4">
 
                         <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            Danh sách lô nguyên liệu
+                            <i class="fas fa-table me-1"></i> Danh sách lô nguyên liệu
+
+                            <div id="tong" class="mb-3">
+                                <span class="badge bg-success">Còn hạn: <span id="countAvailable">0</span></span>
+                                <span class="badge bg-warning text-dark">Sắp hết hạn: <span
+                                        id="countNear">0</span></span>
+                                <span class="badge bg-danger">Hết hạn: <span id="countExpired">0</span></span>
+                            </div>
                         </div>
+
+
 
                         <div class="card-body">
                             <table id="datatablesSimple">

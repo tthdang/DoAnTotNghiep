@@ -10,11 +10,14 @@ import java.util.List;
 @Repository
 public interface IngredientBatchRepository extends JpaRepository<IngredientBatch, Integer> {
     //tìm kiếm
-    List<IngredientBatch> findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc(
+    List<IngredientBatch> findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc(
             Integer ingredientId,
             Double quantity,
             LocalDate today
     );
 
-    List<IngredientBatch> findByIngredient_IngredientIdAndExpiryDateAfterOrderByExpiryDateAsc(Integer ingredientId, LocalDate now);
+//    findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc
+//    findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc
+
+    List<IngredientBatch> findByIngredient_IngredientIdAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc(Integer ingredientId, LocalDate now);
 }

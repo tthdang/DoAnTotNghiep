@@ -218,7 +218,7 @@ public class OrderService {
             );
 
             //update lại stock của product đã gọi tính theo nglieu
-            ingredientBatchService.deductIngredientsByProduct(product, request.getQuantity());
+//            ingredientBatchService.deductIngredientsByProduct(product, request.getQuantity());
 
             OrderItems item = new OrderItems();
             item.setOrder(order);
@@ -234,11 +234,23 @@ public class OrderService {
             item.setOrderItemCreatedAt(LocalDateTime.now());
 
             orderItemRepository.save(item);
+
+            for (Recipe recipe : product.getRecipes()) {
+
+                double totalNeed =
+                        recipe.getQuantityNeeded() * request.getQuantity();
+
+                ingredientBatchService.useIngredient(
+                        recipe.getIngredient().getIngredientId(),
+                        totalNeed,
+                        item
+                );
+            }
             order.getItem().add(item);
         }
         order.setOrderStatus(OrderStatus.ORDERING);
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
-//        order.setFinalAmount(order.getOrderTotal());
+
         Orders updatedOrder = orderRepository.save(order);
 
         return toResponse(updatedOrder);
@@ -282,7 +294,7 @@ public class OrderService {
         // Hoàn lại stock
         if (product != null && orderItem.getOrderItemQuantity() > 0) {
             // Hoàn nguyên liệu
-            ingredientBatchService.returnIngredientsByProduct(product, orderItem.getOrderItemQuantity());
+            ingredientBatchService.returnIngredientsByOrderItem(orderItem);
             productRepository.save(product);
         }
 
@@ -344,8 +356,6 @@ public class OrderService {
                 userService.updateRankForUser(user);
                 userRepository.save(user);
             }
-
-
         }
 
         //cập nhật lai trạng thái bàn
