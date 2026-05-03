@@ -1,97 +1,127 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>BeefChef – Fine Dining & Grill</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 
-<link href="css/homePage.css" rel="stylesheet" />
-<link href="css/order.css" rel="stylesheet" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BeefChef – Fine Dining & Grill</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+
+  <link href="css/homePage.css" rel="stylesheet" />
+  <link href="css/order.css" rel="stylesheet" />
 
 </head>
+
 <body>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="homePage.html"><span>Beef</span>Chef</a>
-  <ul class="nav-links">
-    <li><a href="#menu">Thực đơn</a></li>
-    <li><a href="#" onclick="showOrderStatus()">Trạng thái món ăn</a></li>
-  </ul>
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="homePage.html"><span>Beef</span>Chef</a>
+    <ul class="nav-links">
+      <li><a href="#menu">Thực đơn</a></li>
+      <li><a href="#" onclick="showOrderStatus()">Trạng thái món ăn</a></li>
+    </ul>
 
-</nav>
+  </nav>
 
 
-<!-- MENU -->
-<section id="menu">
-  <div class="menu-header">
-    <span class="section-label">✦ Thực đơn của chúng tôi</span>
-    <h2 class="section-title">Tinh hoa từng món ăn</h2>
-    <div class="divider"></div>
-    <p style="color:var(--muted);max-width:500px;margin:0 auto;font-size:.9rem;line-height:1.7;">
-      Mỗi món được chọn lọc kỹ càng từ nguyên liệu thượng hạng, chế biến bởi đội ngũ đầu bếp chuyên nghiệp.
-    </p>
-  </div>
+  <!-- MENU -->
+  <section id="menu">
+    <div class="menu-header">
+      <span class="section-label">✦ Thực đơn của chúng tôi</span>
+      <h2 class="section-title">Tinh hoa từng món ăn</h2>
+      <div class="divider"></div>
+      <p style="color:var(--muted);max-width:500px;margin:0 auto;font-size:.9rem;line-height:1.7;">
+        Mỗi món được chọn lọc kỹ càng từ nguyên liệu thượng hạng, chế biến bởi đội ngũ đầu bếp chuyên nghiệp.
+      </p>
+    </div>
 
-  <!--Danh mục -->
-  <div class="category-tabs" id="categoryTabs"></div>
+    <!--Danh mục -->
+    <div class="category-tabs" id="categoryTabs"></div>
 
     <!--Danh sách món ăn -->
-  <div class="menu-grid" id="menuGrid"></div>
-  <div class="pagination" id="pagination"></div>
-</section>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div class="pagination" id="pagination"></div>
+  </section>
 
-<!-- CART FAB -->
-<button class="cart-fab" onclick="toggleOrderPanel()">
-  🛒<span class="cart-badge" id="cartBadge">0</span>
-</button>
+  <!-- CART FAB -->
+  <button class="cart-fab" onclick="toggleOrderPanel()">
+    🛒<span class="cart-badge" id="cartBadge">0</span>
+  </button>
 
-<!-- ORDER PANEL -->
-<div class="order-panel" id="orderPanel">
-  <div class="order-panel-header">
-    <div class="order-panel-title">Gọi Món</div>
-    <button class="panel-close" onclick="toggleOrderPanel()">✕</button>
-  </div>
-  <div class="order-items" id="orderItems">
-    <div class="order-empty"><span>🍽️</span>Chưa có món nào được chọn</div>
-  </div>
-  <div class="order-total" id="orderTotal" style="display:none">
-    <div class="total-row">
-      <span class="total-label">Tổng cộng</span>
-      <span class="total-val" id="totalVal">0đ</span>
+  <!-- ORDER PANEL -->
+  <div class="order-panel" id="orderPanel">
+    <div class="order-panel-header">
+      <div class="order-panel-title">Gọi Món</div>
+      <button class="panel-close" onclick="toggleOrderPanel()">✕</button>
     </div>
-    <button class="order-submit" onclick="placeOrder()">Xác Nhận Gọi Món</button>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <span class="footer-logo">BeefChef</span>
-  <p class="footer-tagline">Fine Dining & Premium Grill</p>
-  <p class="footer-copy">© 2025 BeefChef Restaurant. All rights reserved.</p>
-</footer>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-<script src="js/order.js"></script>
-
-<!-- ORDER STATUS MODAL -->
-<div class="modal" id="orderStatusModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Trạng Thái Món Ăn</h3>
-      <button class="modal-close" onclick="closeOrderStatusModal()">✕</button>
+    <div class="order-items" id="orderItems">
+      <div class="order-empty"><span>🍽️</span>Chưa có món nào được chọn</div>
     </div>
-    
-    <div class="modal-body" id="orderStatusContent">
-
-    </div>
-
-    <div class="modal-footer">
-      <button id="btnDong"  class="btn-secondary" onclick="closeOrderStatusModal()">Đóng</button>
+    <div class="order-total" id="orderTotal" style="display:none">
+      <div class="total-row">
+        <span class="total-label">Tổng cộng</span>
+        <span class="total-val" id="totalVal">0đ</span>
+      </div>
+      <button class="order-submit" onclick="placeOrder()">Xác Nhận Gọi Món</button>
     </div>
   </div>
-</div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">BeefChef</span>
+    <p class="footer-tagline">Fine Dining & Premium Grill</p>
+    <p class="footer-copy">© 2025 BeefChef Restaurant. All rights reserved.</p>
+  </footer>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+  <script src="js/order.js"></script>
+  
+
+  <!-- ORDER STATUS MODAL -->
+  <div class="modal" id="orderStatusModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Trạng Thái Món Ăn</h3>
+        <button class="modal-close" onclick="closeOrderStatusModal()">✕</button>
+      </div>
+
+      <div class="modal-body" id="orderStatusContent">
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnDong" class="btn-secondary" onclick="closeOrderStatusModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI CHAT BUTTON -->
+  <button class="ai-fab" onclick="toggleAIChat()">
+    🤖
+  </button>
+
+  <!-- AI CHAT PANEL -->
+  <div class="ai-chat-panel" id="aiChatPanel">
+    <div class="ai-header">
+      <span>🤖 BeefChef AI</span>
+      <button onclick="toggleAIChat()">✕</button>
+    </div>
+
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg bot">Xin chào! Mình là Beef AI 🤖, mình có thể giúp gì cho bạn?</div>
+    </div>
+
+    <div class="ai-input">
+      <input type="text" id="aiInput" placeholder="Hỏi món ăn..." />
+      <button onclick="sendAIMessage()">Gửi</button>
+    </div>
+  </div>
+
 </body>
+<script src="js/chatbot.js"></script>
+
 </html>

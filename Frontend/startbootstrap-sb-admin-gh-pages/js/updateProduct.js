@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (!productRes.ok) throw new Error("Không lấy được thông tin sản phẩm");
 
-        const product = await productRes.json();
+        const data = await productRes.json();
+        const product = data.result;
         const categories = await categoryRes.json();
 
         // Lấy danh mục
@@ -27,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             option.value = cat.categoryId;
             option.textContent = cat.categoryName;
 
-            if (cat.categoryId === product.category?.categoryId) {
+            if (cat.categoryId === product.categoryId) {
                 option.selected = true;
             }
             categorySelect.appendChild(option);
@@ -37,7 +38,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.getElementById("name").value = product.productName || "";
         document.getElementById("description").value = product.productDescription || "";
         document.getElementById("price").value = product.productPrice || "";
-        document.getElementById("stock").value = product.productStock || "";
         document.getElementById("image").value = product.productImage || "";
 
         // set trạng thái
@@ -70,9 +70,8 @@ if (updateForm) {
             productName: document.getElementById("name").value.trim(),
             productDescription: document.getElementById("description").value.trim(),
             productPrice: parseFloat(document.getElementById("price").value),
-            productStock: parseInt(document.getElementById("stock").value),
             productImage: document.getElementById("image").value.trim(),
-            productStatus: document.getElementById("status").value,   
+            productStatus: document.getElementById("status").value,
             category: {
                 categoryId: parseInt(document.getElementById("categoryId").value)
             }

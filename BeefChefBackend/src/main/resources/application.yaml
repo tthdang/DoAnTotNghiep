@@ -8,7 +8,7 @@ spring:
     name: BeefChefBackend
   ai:
     openai:
-      api-key: "AIzaSyArr_OU6E6P75IfzwxiNVbB2LMP5TA9LtE"
+      api-key: "AIzaSyAL-qIP_xvMD5f_socHn9PwpkgGoo5Xzkg"
       chat:
         base-url: https://generativelanguage.googleapis.com
         completions-path: /v1beta/openai/chat/completions

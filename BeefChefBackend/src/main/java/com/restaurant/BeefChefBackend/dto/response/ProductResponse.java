@@ -23,6 +23,7 @@ public class ProductResponse {
     private String productDescription;
     private Integer productStock;
     private Integer productSold;
+    private Integer categoryId;
     private String categoryName;
     private List<RecipeResponse> recipes;
 }

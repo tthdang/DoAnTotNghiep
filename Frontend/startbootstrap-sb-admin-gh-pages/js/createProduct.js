@@ -6,16 +6,13 @@ document.getElementById("createForm").addEventListener("submit", async function 
         productName: document.getElementById("name").value,
         productDescription: document.getElementById("description").value,
         productPrice: parseFloat(document.getElementById("price").value),
-        productStock: parseInt(document.getElementById("stock").value),
         productImage: document.getElementById("image").value,
         productStatus: "AVAILABLE",
-        category: {
-            categoryId: parseInt(document.getElementById("categoryId").value)
-        },
-        recipes: recipes
+        categoryId: parseInt(document.getElementById("categoryId").value),
+        recipes: getRecipesFromForm()
 
     };
-
+    console.log("Recipes:", getRecipesFromForm());
     console.log(product);
 
     try {
@@ -27,6 +24,7 @@ document.getElementById("createForm").addEventListener("submit", async function 
             },
             body: JSON.stringify(product)
         });
+        const result = await response.text();
 
         if (!response.ok) throw new Error();
 

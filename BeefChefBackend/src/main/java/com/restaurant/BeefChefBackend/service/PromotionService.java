@@ -188,123 +188,70 @@ public class PromotionService {
     public void applyOrderPromotion(Orders order, Promotion promotion) {
         BigDecimal total = order.getOrderTotal();
 
-        BigDecimal rankDiscount = applyRankDiscount(order);
-        BigDecimal afterRank = total.subtract(rankDiscount);
+        BigDecimal rankDiscount = calculateRankDiscount(order);
 
-        if (promotion.getMinOrderValue() != null && afterRank.compareTo(promotion.getMinOrderValue()) < 0) {
-            throw new IllegalArgumentException("Hoá đơn không đủ điều kiện!");
+        if (promotion.getMinOrderValue() != null && total.compareTo(promotion.getMinOrderValue()) < 0) {
+            throw new IllegalArgumentException("Hoá đơn không đủ điều kiện áp dụng khuyến mãi!");
         }
 
-        BigDecimal discount;
+        BigDecimal promoDiscount = BigDecimal.ZERO;
 
         if (promotion.getDiscountType() == DiscountType.PERCENT) {
-            //xu ly %
-            discount = afterRank.multiply(promotion.getDiscountValue())
+            promoDiscount = total.multiply(promotion.getDiscountValue())
                     .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         } else {
-            discount = promotion.getDiscountValue();
+            promoDiscount = promotion.getDiscountValue();
         }
+
         //lay tien giam gia tối đa
         if (promotion.getMaxDiscountValue() != null) {
-            discount = discount.min(promotion.getMaxDiscountValue());
+            promoDiscount = promoDiscount.min(promotion.getMaxDiscountValue());
         }
 
-
-        BigDecimal totalDiscount = rankDiscount.add(discount);
-
-        if (totalDiscount.compareTo(total) > 0) {
-            totalDiscount = total;
+        if (promoDiscount.compareTo(total) > 0) {
+            promoDiscount = total;
         }
 
-        order.setDiscountAmount(totalDiscount);
-        order.setFinalAmount(total.subtract(totalDiscount));
         order.setPromotion(promotion);
+        order.setDiscountAmount(promoDiscount);
         order.setUserRankDiscount(rankDiscount);
+        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
 
         promotion.setUsedCount(promotion.getUsedCount() + 1);
-
         if (promotion.getUsedCount() >= promotion.getUsageLimit()) {
             promotion.setStatus(PromotionStatus.OUT_OF_STOCK);
         }
-        promotionRepository.save(promotion);
 
+        promotionRepository.save(promotion);
         orderRepository.save(order);
     }
 
     public void applyItemPromotion(Orders order, Promotion promotion) {
+        BigDecimal total = order.getOrderTotal() != null ? order.getOrderTotal() : BigDecimal.ZERO;
+        BigDecimal rankDiscount = calculateRankDiscount(order);
 
-        BigDecimal total = order.getOrderTotal();
-
-        BigDecimal rankDiscount = applyRankDiscount(order);
-        BigDecimal afterRank = total.subtract(rankDiscount);
-
-        BigDecimal discount = BigDecimal.ZERO;
-
-        if (promotion.getMinOrderValue() != null && afterRank.compareTo(promotion.getMinOrderValue()) < 0) {
+        if (promotion.getMinOrderValue() != null && total.compareTo(promotion.getMinOrderValue()) < 0) {
             throw new IllegalArgumentException("Hoá đơn không đủ điều kiện!");
         }
 
-        List<OrderItems> orderItemsList = order.getItem();
+        // Tìm món được áp dụng
+        BigDecimal promoDiscount = calculateItemPromoDiscount(order, promotion);
 
-        if (orderItemsList.isEmpty()) {
-            throw new IllegalArgumentException("Order không có món ăn nào!");
-        }
-
-        PromotionItem promotionItem = promotionItemRepository.findByPromotion(promotion).orElseThrow(
-                () -> new IllegalArgumentException("Mã khuyến mãi không áp dụng cho món ăn nào")
-        );
-
-        List<PromotionItem> promotionItems = promotionItemRepository.findAllByPromotion(promotion);
-
-        boolean applied = false;
-
-        for (OrderItems item : orderItemsList) {
-
-            for (PromotionItem pItem : promotionItems) {
-
-                if (Objects.equals(item.getProduct().getProductId(), pItem.getProduct().getProductId())
-                        && item.getOrderItemQuantity() >= 1) {
-
-                    BigDecimal itemPrice = item.getOrderItemPrice();
-
-                    if (promotion.getDiscountType() == DiscountType.PERCENT) {
-                        discount = itemPrice.multiply(promotion.getDiscountValue())
-                                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-                    } else {
-                        discount = promotion.getDiscountValue();
-                    }
-
-                    if (promotion.getMaxDiscountValue() != null) {
-                        discount = discount.min(promotion.getMaxDiscountValue());
-                    }
-
-                    applied = true;
-                    break; // chỉ giảm 1 món
-                }
-            }
-
-            if (applied) break;
-        }
-
-        if (!applied) {
+        if (promoDiscount.compareTo(BigDecimal.ZERO) == 0) {
             throw new IllegalArgumentException("Không có món nào đủ điều kiện áp dụng khuyến mãi!");
         }
 
-        BigDecimal totalDiscount = rankDiscount.add(discount);
-
-        if (totalDiscount.compareTo(total) > 0){
-            totalDiscount = total;
+        if (promoDiscount.compareTo(total) > 0) {
+            promoDiscount = total;
         }
 
-        // apply vào order
-        order.setDiscountAmount(totalDiscount);
-        order.setFinalAmount(total.subtract(totalDiscount));
-        order.setUserRankDiscount(rankDiscount);
         order.setPromotion(promotion);
+        order.setDiscountAmount(promoDiscount);           // chỉ promotion
+        order.setUserRankDiscount(rankDiscount);
+        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
 
-        // update promotion
+        // update promotion usage
         promotion.setUsedCount(promotion.getUsedCount() + 1);
-
         if (promotion.getUsedCount() >= promotion.getUsageLimit()) {
             promotion.setStatus(PromotionStatus.OUT_OF_STOCK);
         }
@@ -329,4 +276,50 @@ public class PromotionService {
         return total.multiply(percent)
                 .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
     }
+
+    // Tính giảm giá theo hạng thành viên
+    public BigDecimal calculateRankDiscount(Orders order) {
+        if (order.getUser() == null || order.getUser().getRank() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal percent = order.getUser().getRank().getDiscount();
+        if (percent == null || percent.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return order.getOrderTotal()
+                .multiply(percent)
+                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateItemPromoDiscount(Orders order, Promotion promotion) {
+        BigDecimal discount = BigDecimal.ZERO;
+        List<PromotionItem> promotionItems = promotionItemRepository.findAllByPromotion(promotion);
+
+        for (OrderItems item : order.getItem()) {
+            for (PromotionItem pItem : promotionItems) {
+                if (Objects.equals(item.getProduct().getProductId(), pItem.getProduct().getProductId())
+                        && item.getOrderItemQuantity() >= 1) {
+
+                    BigDecimal itemTotal = item.getOrderItemPrice()
+                            .multiply(BigDecimal.valueOf(item.getOrderItemQuantity()));
+
+                    if (promotion.getDiscountType() == DiscountType.PERCENT) {
+                        discount = itemTotal.multiply(promotion.getDiscountValue())
+                                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                    } else {
+                        discount = promotion.getDiscountValue();
+                    }
+
+                    if (promotion.getMaxDiscountValue() != null) {
+                        discount = discount.min(promotion.getMaxDiscountValue());
+                    }
+                    return discount;
+                }
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
 }

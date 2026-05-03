@@ -2,9 +2,7 @@ package com.restaurant.BeefChefBackend.service;
 
 import com.restaurant.BeefChefBackend.dto.request.OrderItemRequest;
 import com.restaurant.BeefChefBackend.dto.request.UpdateOrderRequest;
-import com.restaurant.BeefChefBackend.dto.response.ApiResponse;
-import com.restaurant.BeefChefBackend.dto.response.OrderItemResponse;
-import com.restaurant.BeefChefBackend.dto.response.OrderResponse;
+import com.restaurant.BeefChefBackend.dto.response.*;
 import com.restaurant.BeefChefBackend.entity.*;
 import com.restaurant.BeefChefBackend.enums.OrderItemStatus;
 import com.restaurant.BeefChefBackend.enums.OrderStatus;
@@ -15,8 +13,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +50,9 @@ public class OrderService {
 
     @Autowired
     private IngredientBatchService ingredientBatchService;
+
+    @Autowired
+    private PromotionService promotionService;
 
     public OrderResponse toResponse( Orders orders){
         List<OrderItemResponse> itemResponses = orders.getItem().stream()
@@ -200,9 +204,8 @@ public class OrderService {
                 .toList();
     }
 
-
-
     //add them order item moi
+    @Transactional
     public OrderResponse addOrderItem(Integer orderId, List<OrderItemRequest> list) {
         Orders order = getOrder(orderId);
 
@@ -214,42 +217,55 @@ public class OrderService {
 
         for (OrderItemRequest request : list) {
             Products product = productRepository.findById(request.getProductId()).orElseThrow(
-                    () -> new RuntimeException("Product " + request.getProductId() + " not found!")
+                    () -> new RuntimeException("Không tìm thấy sản phẩm id: " + request.getProductId())
             );
 
-            //update lại stock của product đã gọi tính theo nglieu
-//            ingredientBatchService.deductIngredientsByProduct(product, request.getQuantity());
+            // Kiểm tra stock từ nguyên liệu
+            int maxCanMake = productService.calculateStock(product);
+            if (request.getQuantity() > maxCanMake) {
+                throw new IllegalArgumentException(
+                        String.format("Món '%s' hiện chỉ làm được tối đa %d phần. Bạn gọi %d phần!",
+                                product.getProductName(), maxCanMake, request.getQuantity())
+                );
+            }
 
+            // Tạo OrderItem
             OrderItems item = new OrderItems();
             item.setOrder(order);
             item.setProduct(product);
             item.setOrderItemQuantity(request.getQuantity());
             item.setOrderItemPrice(product.getProductPrice());
             item.setOrderItemStatus(OrderItemStatus.PENDING);
-
-            addTotal = addTotal.add(
-                    product.getProductPrice().multiply(BigDecimal.valueOf(request.getQuantity()))
-            );
-
             item.setOrderItemCreatedAt(LocalDateTime.now());
 
-            orderItemRepository.save(item);
+            // lưu lại orderItem
+            OrderItems savedItem = orderItemRepository.save(item);
+            order.getItem().add(savedItem);
 
-            for (Recipe recipe : product.getRecipes()) {
+            BigDecimal itemTotal = product.getProductPrice()
+                    .multiply(BigDecimal.valueOf(request.getQuantity()));
+            addTotal = addTotal.add(itemTotal);
 
-                double totalNeed =
-                        recipe.getQuantityNeeded() * request.getQuantity();
+            //trừ nguyên liệu
+            try {
+                for (Recipe recipe : product.getRecipes()) {
+                    double totalNeed = recipe.getQuantityNeeded() * request.getQuantity();
 
-                ingredientBatchService.useIngredient(
-                        recipe.getIngredient().getIngredientId(),
-                        totalNeed,
-                        item
-                );
+                    ingredientBatchService.useIngredient(
+                            recipe.getIngredient().getIngredientId(),
+                            totalNeed,
+                            savedItem
+                    );
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Lỗi khi trừ nguyên liệu cho món "
+                        + product.getProductName() + ": " + e.getMessage());
             }
-            order.getItem().add(item);
         }
-        order.setOrderStatus(OrderStatus.ORDERING);
+
+        // Cập nhật tổng tiền order
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
+        order.setOrderStatus(OrderStatus.ORDERING);
 
         Orders updatedOrder = orderRepository.save(order);
 
@@ -275,8 +291,6 @@ public class OrderService {
 
     //cancel orderItem
     public OrderResponse cancelOrderItem(Integer orderId, Integer orderItemId){
-
-
         OrderItems orderItem = orderItemRepository.findById(orderItemId).orElseThrow(
                 () -> new IllegalArgumentException("Không tìm thấy OrderItem có id: " + orderItemId)
         );
@@ -330,41 +344,46 @@ public class OrderService {
             throw new IllegalStateException("Order chưa được hoàn thành tât cả các món thì không được thanh toán!");
         }
 
-        BigDecimal amount = order.getFinalAmount();
-        if (amount == null) {
-            amount = order.getOrderTotal();
+        BigDecimal finalAmount = order.getFinalAmount();
+
+        if (finalAmount == null) {
+            // Trường hợp chưa áp dụng promotion nào
+            BigDecimal rankDiscount = promotionService.calculateRankDiscount(order);
+            finalAmount = order.getOrderTotal()
+                    .subtract(rankDiscount)
+                    .max(BigDecimal.ZERO);
+
+            order.setUserRankDiscount(rankDiscount);
+            order.setDiscountAmount(BigDecimal.ZERO);
+            order.setFinalAmount(finalAmount);
         }
 
         order.setOrderStatus(OrderStatus.PAID);
         order.setPaidAt(LocalDateTime.now());
 
-        Orders save = orderRepository.save(order);
+        Orders saved = orderRepository.save(order);
 
 
         //cong diem va cap nhat lai diem/rank cho user
-        User user = save.getUser();
-        if(user != null){
-            String phone = user.getUserPhone();
-            //ktra xem co phai khach vang lai ko
-            if (!"0968425402".equals(phone)){
-                //xy ly 10k = 1d
-                int earnedPoint = amount
-                        .divide(BigDecimal.valueOf(10000))
-                        .intValue();
+        User user = saved.getUser();
+        if (user != null && !"0968425402".equals(user.getUserPhone())) {
+            int earnedPoint = finalAmount
+                    .divide(BigDecimal.valueOf(10000), 0, RoundingMode.DOWN)
+                    .intValue();
 
-                user.setUserPoint(user.getUserPoint() + earnedPoint);
-                userService.updateRankForUser(user);
-                userRepository.save(user);
-            }
+            user.setUserPoint(user.getUserPoint() + earnedPoint);
+            userService.updateRankForUser(user);
+            userRepository.save(user);
         }
 
         //cập nhật lai trạng thái bàn
-        Tables table = save.getTable();
-        if(table != null){
+        Tables table = saved.getTable();
+        if (table != null) {
             table.setTableStatus(TableStatus.AVAILABLE);
             tableRepository.save(table);
         }
-        return toResponse(save);
+
+        return toResponse(saved);
     }
 
     // Lấy order theo id bàn
@@ -388,4 +407,6 @@ public class OrderService {
 
         }
     }
+
+
 }

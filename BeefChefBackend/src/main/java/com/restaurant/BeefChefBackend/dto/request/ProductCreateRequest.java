@@ -17,7 +17,6 @@ public class ProductCreateRequest {
     private ProductStatus productStatus;
     private String productImage;
     private String productDescription;
-    private Integer productStock;
     private Integer categoryId;
     private List<RecipeRequest> recipes;
 }

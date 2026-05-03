@@ -28,9 +28,6 @@ public class IngredientBatch {
     private BigDecimal batchPrice;
 
     @Enumerated(EnumType.STRING)
-    private BatchStatus status = BatchStatus.AVAILABLE;
+    private BatchStatus status;
 
-    public boolean isNearExpiry() {
-        return expiryDate.isBefore(LocalDate.now().plusDays(4));
-    }
 }

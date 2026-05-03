@@ -36,10 +36,8 @@ async function loadBooking() {
 
             const actionButtons =
                 booking.status === "PENDING"
-                    ? `
-        <button class="btn btn-warning btn-sm" onclick="confirmBooking(${booking.reservationId})">Chấp nhận</button>
-        <button class="btn btn-danger btn-sm" onclick="cancelBooking(${booking.reservationId})">Từ chối</button>
-      `
+                    ? ` <button class="btn btn-warning btn-sm" onclick="confirmBooking(${booking.reservationId})">Chấp nhận</button>
+                        <button class="btn btn-danger btn-sm" onclick="cancelBooking(${booking.reservationId})">Từ chối</button>`
                     : `<span class="text-muted">Đã xử lý</span>`;
 
             const row = `
@@ -81,7 +79,7 @@ async function loadBooking() {
 }
 
 
-// ===== Xác nhận đơn =====
+// xác nhận đơn
 async function confirmBooking(id) {
     if (!confirm("Bạn có chắc muốn chấp nhận không?")) return;
 
@@ -106,7 +104,7 @@ async function confirmBooking(id) {
     }
 }
 
-// ===== từ chối đơn =====
+// từ chối đơn
 async function cancelBooking(id) {
     if (!confirm("Bạn có chắc muốn từ chối không?")) return;
 

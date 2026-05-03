@@ -1357,6 +1357,167 @@
 }
 
 .pagination button.active {
-  background: #000;
+  background: #000000;
   color: #fff;
+}
+
+
+/* hiển thị xác nhận gọi món*/
+.order-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #333;
+}
+
+/* hàng trên */
+.order-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* thông tin */
+.order-item-info {
+  max-width: 70%;
+}
+
+.order-item-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.order-item-price {
+  color: #caa85c;
+  font-size: 14px;
+}
+
+/* tổng tiền */
+.order-item-total {
+  font-weight: bold;
+  color: #fff;
+
+}
+
+/* hàng dưới (nút) */
+.order-item-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* nút */
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #a8a614;
+  color: #fff;
+  cursor: pointer;
+}
+
+.qty {
+  min-width: 20px;
+  text-align: center;
+}
+
+.remove-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #ff4d4f;
+  cursor: pointer;
+}
+
+
+/* AI Chatbot */
+/* FLOAT BUTTON */
+.ai-fab {
+  position: fixed;
+  bottom: 160px;
+  right: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: none;
+  background: #196cc5;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+/* PANEL */
+.ai-chat-panel {
+  position: fixed;
+  bottom: 160px;
+  right: 20px;
+  width: 320px;
+  height: 420px;
+  background: #fff;
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* HEADER */
+.ai-header {
+  background: #196cc5;
+  color: white;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* MESSAGES */
+.ai-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.ai-msg {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.ai-msg.bot {
+  background: #eee;
+  color: black;
+}
+
+.ai-msg.user {
+  background: #196cc5;
+  color: #ffffff;
+  margin-left: auto;
+}
+
+/* INPUT */
+.ai-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+.ai-input input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+}
+
+.ai-input button {
+  background: #196cc5;
+  color: white;
+  border: none;
+  padding: 0 15px;
+}
+
+.ai-msg b {
+  color: #e67e22;
+  font-weight: 600;
 }

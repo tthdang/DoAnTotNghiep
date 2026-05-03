@@ -69,6 +69,7 @@ public class ProductService {
                 .productStatus(status)
                 .productStock(stock)
                 .productSold(product.getProductSold())
+                .categoryId(product.getCategory().getCategoryId())
                 .categoryName(product.getCategory().getCategoryName())
                 .recipes(recipeResponses)
                 .build();
@@ -148,7 +149,6 @@ public class ProductService {
         products.setProductStatus(request.getProductStatus());
         products.setProductDescription(request.getProductDescription());
         products.setProductImage(request.getProductImage());
-        products.setProductStock(request.getProductStock());
         products.setCategory(categories);
 
         Products save = productRepository.save(products);
@@ -172,16 +172,16 @@ public class ProductService {
             double available = ingredientService.getAvailable(recipe.getIngredient());
             double needed = recipe.getQuantityNeeded();
 
-            System.out.println("----");
-            System.out.println("Nguyên liệu: " + recipe.getIngredient().getIngredientName());
-            System.out.println("Available: " + available);
-            System.out.println("Needed: " + needed);
+//            System.out.println("----");
+//            System.out.println("Nguyên liệu: " + recipe.getIngredient().getIngredientName());
+//            System.out.println("Available: " + available);
+//            System.out.println("Needed: " + needed);
             // tính sl có thể làm đc
-            int possible = (int) (available / recipe.getQuantityNeeded());
-            System.out.println("Possible: " + possible);
+            int possible = (int) Math.floor(available / needed);
+//            System.out.println("Possible: " + possible);
             stock = Math.min(stock, possible);
         }
-        return stock;
+        return Math.max(0, stock); //tránh stock âm
     }
 
     public void updateProductStatus(Products product) {
@@ -198,5 +198,8 @@ public class ProductService {
                 .toList();
     }
 
-
+    //xử lý combo sắp hết hạn
+    public List<Products> getProductsByIngredients(List<Integer> ids) {
+        return productRepository.findByIngredientIds(ids);
+    }
 }

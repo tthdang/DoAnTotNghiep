@@ -97,7 +97,7 @@ public class IngredientBatchService {
             return BatchStatus.EXPIRED;
         }
 
-        if (!batch.getExpiryDate().isAfter(today.plusDays(1))) {
+        if (!batch.getExpiryDate().isAfter(today.plusDays(2))) {
             return BatchStatus.NEAR_EXPIRY;
         }
 
@@ -186,43 +186,55 @@ public class IngredientBatchService {
         ingredientUsageRepository.deleteAll(usages);
     }
 
+    @Transactional
     public void useIngredient(Integer ingredientId, double quantityNeeded, OrderItems orderItem) {
+        if (quantityNeeded <= 0) return;
 
+        LocalDate today = LocalDate.now();
+
+        // Lấy các batch còn hạn sử dụng và còn số lượng > 0, sắp xếp theo hạn sử dụng gần nhất
         List<IngredientBatch> batches = ingredientBatchRepository
-                .findByIngredient_IngredientIdAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc(ingredientId, LocalDate.now());
+                .findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc(
+                        ingredientId, 0.0, today);
 
-        double remaining = quantityNeeded;
-
-        for (IngredientBatch batch : batches) {
-            if (remaining <= 0) break;
-
-            double available = batch.getQuantityRemaining();
-            double used = Math.min(available, remaining);
-
-            batch.setQuantityRemaining(available - used);
-            batch.setStatus(calculateStatus(batch));//cap nhat status
-            ingredientBatchRepository.save(batch);
-
-            IngredientUsage usage = new IngredientUsage();
-            usage.setOrderItem(orderItem);
-            usage.setBatch(batch);
-            usage.setQuantityUsed(used);
-
-            ingredientUsageRepository.save(usage);
-
-            remaining -= used;
-        }
-
-        if (remaining > 0) {
-            throw new RuntimeException("Không đủ nguyên liệu!");
-        }
-
-        System.out.println("IngredientId: " + ingredientId);
-        System.out.println("Need: " + quantityNeeded);
+        double remainingNeed = quantityNeeded;
 
         for (IngredientBatch batch : batches) {
-            System.out.println("Batch: " + batch.getBatchId() +
-                    " | Available: " + batch.getQuantityRemaining());
+            if (remainingNeed <= 0) break;
+
+            double canDeduct = Math.min(remainingNeed, batch.getQuantityRemaining());
+
+            if (canDeduct > 0) {
+                // Trừ số lượng
+                batch.setQuantityRemaining(batch.getQuantityRemaining() - canDeduct);
+                remainingNeed -= canDeduct;
+
+
+                if (batch.getQuantityRemaining() <= 0.01) {
+                    batch.setStatus(BatchStatus.OUT_OF_STOCK);
+                }
+                else if (batch.getQuantityRemaining() < batch.getQuantityImported() * 0.25) {
+                    batch.setStatus(BatchStatus.NEAR_EXPIRY);
+                }
+                else {
+                    batch.setStatus(BatchStatus.AVAILABLE);
+                }
+
+                ingredientBatchRepository.save(batch);
+            }
         }
+
+        // Nếu vẫn còn thiếu sau khi trừ hết các batch hợp lệ
+        if (remainingNeed > 0.01) {
+            throw new IllegalArgumentException(
+                    String.format("Không đủ nguyên liệu cho món này. Còn thiếu %.2f", remainingNeed)
+            );
+        }
+    }
+
+
+    public List<IngredientBatch> getExpiringBatches(int days) {
+        return ingredientBatchRepository
+                .findExpiringSoon(LocalDate.now().plusDays(days));
     }
 }

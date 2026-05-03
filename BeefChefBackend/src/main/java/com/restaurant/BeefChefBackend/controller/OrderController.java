@@ -92,7 +92,7 @@ public class OrderController {
         try{
             return ApiResponse.<OrderResponse>builder()
                     .result(orderService.toResponse(orders))
-                    .message("Get Order successfully!")
+                    .message("Lấy order thành công!!")
                     .build();
         } catch (Exception e){
             return ApiResponse.<OrderResponse>builder()
@@ -148,6 +148,7 @@ public class OrderController {
         }
     }
 
+    //áp dụng khuyến mãi
     @PostMapping("/{orderId}/applyPromotion")
     public ApiResponse<OrderResponse> applyPromotion(@PathVariable Integer orderId, @RequestParam String code) {
 

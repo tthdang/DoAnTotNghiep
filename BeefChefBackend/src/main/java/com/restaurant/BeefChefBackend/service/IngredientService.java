@@ -89,4 +89,12 @@ public class IngredientService {
         }
         return total;
     }
+
+    //xử lý combo hết hạn
+    public List<Integer> getIngredientIdsFromBatches(List<IngredientBatch> batches) {
+        return batches.stream()
+                .map(b -> b.getIngredient().getIngredientId())
+                .distinct()
+                .toList();
+    }
 }

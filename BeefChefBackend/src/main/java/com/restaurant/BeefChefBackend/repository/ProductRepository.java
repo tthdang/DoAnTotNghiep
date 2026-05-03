@@ -30,4 +30,22 @@ public interface ProductRepository extends JpaRepository<Products, Integer> {
 //    List<Object[]> getTop5Products(PageRequest pageRequest);
 
     List<Products> findTop5ByOrderByProductSoldDesc();
+
+    //lấy combo theo danh mục
+    @Query(value = """
+                SELECT * FROM products p
+                JOIN categories c ON p.category_id = c.category_id
+                WHERE c.category_name = :categoryName
+                ORDER BY RAND()
+                LIMIT 1
+            """, nativeQuery = true)
+    Products findRandomByCategory(@Param("categoryName") String categoryName);
+
+    //xử lý combo sắp hết hạn
+    @Query("""
+            SELECT DISTINCT p FROM Products p
+            JOIN p.recipes r
+            WHERE r.ingredient.ingredientId IN :ids
+            """)
+    List<Products> findByIngredientIds(@Param("ids") List<Integer> ids);
 }

@@ -16,6 +16,10 @@ public class ChatController {
 
     @PostMapping
     public String chat(@RequestBody ChatRequest request){
-        return chatService.chat(request);
+        try {
+            return chatService.chat(request);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

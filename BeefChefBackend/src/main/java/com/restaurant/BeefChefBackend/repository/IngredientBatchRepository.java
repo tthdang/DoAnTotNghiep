@@ -2,6 +2,7 @@ package com.restaurant.BeefChefBackend.repository;
 
 import com.restaurant.BeefChefBackend.entity.IngredientBatch;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -16,8 +17,14 @@ public interface IngredientBatchRepository extends JpaRepository<IngredientBatch
             LocalDate today
     );
 
-//    findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc
-//    findByIngredient_IngredientIdAndQuantityRemainingGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc
 
     List<IngredientBatch> findByIngredient_IngredientIdAndExpiryDateGreaterThanEqualOrderByExpiryDateAsc(Integer ingredientId, LocalDate now);
+
+    //xử lý combo hết hạn
+    @Query("""
+            SELECT b FROM IngredientBatch b
+            WHERE b.expiryDate <= :date
+            AND b.quantityRemaining > 0
+            """)
+    List<IngredientBatch> findExpiringSoon(LocalDate date);
 }

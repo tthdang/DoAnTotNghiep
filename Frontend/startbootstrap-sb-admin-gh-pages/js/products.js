@@ -97,7 +97,8 @@ async function deleteProduct(id) {
 
         if (response.ok) {
             alert("Xoá món ăn thành công!");
-            loadProducts();        // Dùng await để chắc chắn
+            window.location.href = "productAdmin.html"
+            // loadProducts();        // Dùng await để chắc chắn
         } else {
             alert("Xoá món ăn thất bại!");
         }

@@ -73,6 +73,12 @@ function renderOrder(order) {
 
     // Danh sách món
     renderItems(order.items || []);
+
+    //xử lý khi chưa thanh toán
+    const invoiceBtn = document.getElementById('btnDownloadInvoice');
+    if (invoiceBtn) {
+        invoiceBtn.style.display = (order.orderStatus === 'PAID') ? 'inline-block' : 'none';
+    }
 }
 
 //hiển thị ds item
@@ -240,6 +246,57 @@ document.addEventListener('click', async function (e) {
             } catch (err) {
                 alert("Lỗi kết nối!");
             }
+        }
+    }
+});
+
+// nút xuất hoá đơn
+document.addEventListener('click', async function (e) {
+    if (e.target && e.target.id === 'btnDownloadInvoice' && currentOrder) {
+
+        // Chỉ cho xuất hoá đơn khi đã thanh toán
+        if (currentOrder.orderStatus !== 'PAID') {
+            alert("Chỉ có thể xuất hoá đơn khi đơn hàng đã thanh toán!");
+            return;
+        }
+
+        const orderId = currentOrder.orderId;
+        const btn = document.getElementById('btnDownloadInvoice');
+        const originalText = btn.innerHTML;
+
+        try {
+            // Hiệu ứng loading
+            btn.innerHTML = 'Đang tạo PDF...';
+            btn.disabled = true;
+
+            const response = await fetch(`http://localhost:8081/beefchef/invoices/${orderId}`, {
+                method: 'GET',
+                headers: {
+                    // 'Authorization': 'Bearer ' + token
+                }
+            });
+
+            if (response.status === 404) {
+                alert("Không tìm thấy đơn hàng!");
+                return;
+            }
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert("Lỗi khi tạo hoá đơn: " + errorText);
+                return;
+            }
+
+            alert("Hoá đơn đã được tải về thành công!");
+
+        } catch (error) {
+            console.error("Lỗi tải hoá đơn:", error);
+            alert("Có lỗi xảy ra khi tải hoá đơn. Vui lòng thử lại!");
+        }
+        finally {
+            // Khôi phục nút
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     }
 });

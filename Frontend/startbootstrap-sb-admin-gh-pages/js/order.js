@@ -263,21 +263,23 @@ function updateCartUI() {
 
     // Hiển thị danh sách món trong panel
     orderItems.innerHTML = cart.map(item => `
-        <div class="order-item">
+    <div class="order-item">
+        <div class="order-item-top">
             <div class="order-item-info">
                 <div class="order-item-name">${item.name}</div>
                 <div class="order-item-price">${fmt(item.price)} × ${item.quantity}</div>
             </div>
             <div class="order-item-total">${fmt(item.price * item.quantity)}</div>
-            
-            <div class="order-item-actions">
-                <button onclick="changeQuantity(${item.id}, -1)" class="qty-btn">-</button>
-                <span class="qty">${item.quantity}</span>
-                <button onclick="changeQuantity(${item.id}, 1)" class="qty-btn">+</button>
-                <button onclick="removeFromCart(${item.id})" class="remove-btn">🗑</button>
-            </div>
         </div>
-    `).join('');
+
+        <div class="order-item-actions">
+            <button onclick="changeQuantity(${item.id}, -1)" class="qty-btn">-</button>
+            <span class="qty">${item.quantity}</span>
+            <button onclick="changeQuantity(${item.id}, 1)" class="qty-btn">+</button>
+            <button onclick="removeFromCart(${item.id})" class="remove-btn">🗑</button>
+        </div>
+    </div>
+`).join('');
 
     // Tính tổng tiền
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -310,7 +312,7 @@ function showToast(message, type = "success") {
     console.log(`[Toast Debug] Gọi showToast: "${message}" - type: ${type}`);
 
     let container = document.getElementById('toast-container');
-    
+
     if (!container) {
         console.log("[Toast Debug] Tạo mới toast-container");
         container = document.createElement('div');
@@ -327,19 +329,19 @@ function showToast(message, type = "success") {
     container.appendChild(toast);
     console.log(`[Toast Debug] Đã thêm toast vào DOM. Tổng toast hiện tại: ${container.children.length}`);
 
-    // Tự động ẩn sau 4 giây
+    // Tự động ẩn sau 3 giây
     setTimeout(() => {
         console.log("[Toast Debug] Bắt đầu ẩn toast");
-        toast.style.transition = 'opacity 0.4s ease';
+        toast.style.transition = 'opacity 2.0s ease';
         toast.style.opacity = '0';
-        
+
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
                 console.log("[Toast Debug] Đã xóa toast khỏi DOM");
             }
-        }, 400);
-    }, 4000);
+        }, 100);
+    }, 1000);
 }
 
 // ── ORDER PANEL ──
@@ -347,11 +349,20 @@ function toggleOrderPanel() {
     document.getElementById('orderPanel').classList.toggle('open');
 }
 
-//   PLACE ORDER - SỬA THEO DTO BACKEND  
+//   PLACE ORDER 
 async function placeOrder() {
     if (cart.length === 0) {
         showToast("Giỏ hàng đang trống!", "error");
         return;
+    }
+
+    //check stock
+    for (let item of cart) {
+        const product = menuData.find(p => p.id === item.id);
+        if (product && item.quantity > product.stock) {
+            showToast(`Món "${item.name}" chỉ còn ${product.stock} phần. Không thể đặt ${item.quantity}!`, "error");
+            return;
+        }
     }
 
     const currentOrderStr = localStorage.getItem("currentOrder");
@@ -360,10 +371,12 @@ async function placeOrder() {
         return;
     }
 
+
+
     const currentOrder = JSON.parse(currentOrderStr);
     const orderId = currentOrder.orderId;
 
-    // Chuẩn bị body theo đúng DTO AddItemsRequest
+    // Chuẩn bị body 
     const requestBody = {
         items: cart.map(item => ({
             productId: item.id,
@@ -376,7 +389,6 @@ async function placeOrder() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
-                // Không cần Authorization nếu bạn cho phép public
             },
             body: JSON.stringify(requestBody)
         });
@@ -448,7 +460,7 @@ async function showOrderStatus() {
     // Load lần đầu tiên
     await loadOrderStatus(orderId, content);
 
-    // Dừng polling cũ nếu có
+    // Dừng polling cũ 
     if (orderStatusInterval) {
         clearInterval(orderStatusInterval);
     }

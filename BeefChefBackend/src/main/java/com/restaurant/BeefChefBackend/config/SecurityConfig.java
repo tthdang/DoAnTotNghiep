@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/rank/**",
             "/promotion/**",
             "/chat/**",
-            "/reservation/**"
+            "/reservation/**",
+            "/invoices/**"
 
     };
 
