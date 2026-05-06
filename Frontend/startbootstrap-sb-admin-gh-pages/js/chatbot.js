@@ -9,6 +9,7 @@ async function sendAIMessage() {
 
   const text = input.value.trim();
   if (!text) return;
+  
 
   // user message
   const userMsg = document.createElement("div");

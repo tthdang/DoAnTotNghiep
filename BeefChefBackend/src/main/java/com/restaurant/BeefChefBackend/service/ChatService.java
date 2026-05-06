@@ -243,7 +243,7 @@ public class ChatService {
                 Yêu cầu:
                 - Giới thiệu combo một cách hấp dẫn
                 - KHÔNG được thêm thông tin ngoài dữ liệu.
-                - Nhấn mạnh đây là combo được bạn 🤖
+                - Nhấn mạnh đây là combo được mình 🤖
                 - Có thể nói: "combo hôm nay", "combo đặc biệt"
                 - KHÔNG được đề cập đến nguyên liệu hết hạn
                 - KHÔNG nói lý do nội bộ
