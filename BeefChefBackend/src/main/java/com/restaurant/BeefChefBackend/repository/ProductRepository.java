@@ -1,6 +1,7 @@
 package com.restaurant.BeefChefBackend.repository;
 
 import com.restaurant.BeefChefBackend.entity.Products;
+import com.restaurant.BeefChefBackend.enums.ProductStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -48,4 +49,7 @@ public interface ProductRepository extends JpaRepository<Products, Integer> {
             WHERE r.ingredient.ingredientId IN :ids
             """)
     List<Products> findByIngredientIds(@Param("ids") List<Integer> ids);
+
+    //Tìm tất cả món ăn
+    List<Products> findByProductStatus(ProductStatus status);
 }

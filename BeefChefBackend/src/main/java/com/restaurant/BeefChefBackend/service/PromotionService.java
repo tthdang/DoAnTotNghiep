@@ -10,6 +10,7 @@ import com.restaurant.BeefChefBackend.enums.PromotionStatus;
 import com.restaurant.BeefChefBackend.enums.PromotionType;
 import com.restaurant.BeefChefBackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -35,6 +36,10 @@ public class PromotionService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    @Lazy
+    private OrderService orderService;
 
     private PromotionResponse toResponse(Promotion promotion) {
 
@@ -188,7 +193,7 @@ public class PromotionService {
     public void applyOrderPromotion(Orders order, Promotion promotion) {
         BigDecimal total = order.getOrderTotal();
 
-        BigDecimal rankDiscount = calculateRankDiscount(order);
+//        BigDecimal rankDiscount = calculateRankDiscount(order);
 
         if (promotion.getMinOrderValue() != null && total.compareTo(promotion.getMinOrderValue()) < 0) {
             throw new IllegalArgumentException("Hoá đơn không đủ điều kiện áp dụng khuyến mãi!");
@@ -214,21 +219,26 @@ public class PromotionService {
 
         order.setPromotion(promotion);
         order.setDiscountAmount(promoDiscount);
-        order.setUserRankDiscount(rankDiscount);
-        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
+//        order.setUserRankDiscount(rankDiscount);
+//        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
+
+        order.setPromotion(promotion);
+        order.setDiscountAmount(promoDiscount);
 
         promotion.setUsedCount(promotion.getUsedCount() + 1);
+
         if (promotion.getUsedCount() >= promotion.getUsageLimit()) {
             promotion.setStatus(PromotionStatus.OUT_OF_STOCK);
         }
 
         promotionRepository.save(promotion);
+        orderService.recalculateOrder(order);
         orderRepository.save(order);
     }
 
     public void applyItemPromotion(Orders order, Promotion promotion) {
         BigDecimal total = order.getOrderTotal() != null ? order.getOrderTotal() : BigDecimal.ZERO;
-        BigDecimal rankDiscount = calculateRankDiscount(order);
+//        BigDecimal rankDiscount = calculateRankDiscount(order);
 
         if (promotion.getMinOrderValue() != null && total.compareTo(promotion.getMinOrderValue()) < 0) {
             throw new IllegalArgumentException("Hoá đơn không đủ điều kiện!");
@@ -247,8 +257,11 @@ public class PromotionService {
 
         order.setPromotion(promotion);
         order.setDiscountAmount(promoDiscount);           // chỉ promotion
-        order.setUserRankDiscount(rankDiscount);
-        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
+//        order.setUserRankDiscount(rankDiscount);
+//        order.setFinalAmount(total.subtract(promoDiscount).subtract(rankDiscount));
+
+        order.setPromotion(promotion);
+        order.setDiscountAmount(promoDiscount);
 
         // update promotion usage
         promotion.setUsedCount(promotion.getUsedCount() + 1);
@@ -257,6 +270,7 @@ public class PromotionService {
         }
 
         promotionRepository.save(promotion);
+        orderService.recalculateOrder(order);
         orderRepository.save(order);
     }
 

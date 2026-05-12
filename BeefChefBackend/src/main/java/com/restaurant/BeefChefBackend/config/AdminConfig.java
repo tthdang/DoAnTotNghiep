@@ -33,7 +33,7 @@ public class AdminConfig {
                 role.add(Roles.ADMIN.name());
                 Ranks rank = rankService.getRankById(5);
                 User admin = User.builder()
-                        .userPhone("admin")
+                        .userPhone("admin@12345")
                         .userPassword(passwordEncoder.encode("admin"))
                         .userRole(role)
                         .userPoint(100000L)
@@ -47,7 +47,7 @@ public class AdminConfig {
                 role.add(Roles.CHEF.name());
                 Ranks rank = rankService.getRankById(5);
                 User admin = User.builder()
-                        .userPhone("chef123")
+                        .userPhone("chef@12345")
                         .userPassword(passwordEncoder.encode("chef123"))
                         .userRole(role)
                         .userPoint(100000L)

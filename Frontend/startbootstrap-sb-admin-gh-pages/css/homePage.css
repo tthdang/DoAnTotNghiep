@@ -572,8 +572,8 @@
   }
 
   .menu-price {
-    /* font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem; font-weight: 600; color: var(--gold-lt); */
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; font-weight: 600; color: var(--gold-lt);
     font-size: 1.28rem;
     font-weight: 600;
     color: var(--gold-lt);
@@ -1271,3 +1271,51 @@
     background: #000;
     color: #fff;
   }
+
+/* SĐT */
+#hero{
+  position: relative;
+}
+
+.hero-hotline{
+  position: absolute;
+  top: 140px;
+  right: 80px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  padding: 14px 22px;
+
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+
+  border: 1px solid rgba(212,167,63,0.4);
+  border-radius: 14px;
+
+  z-index: 5;
+}
+
+.hero-hotline span{
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d4a73f;
+
+  margin-bottom: 4px;
+}
+
+.hero-hotline p{
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  color: #fff;
+  text-decoration: none;
+
+  transition: 0.3s;
+}
+
+.hero-hotline a:hover{
+  color: #d4a73f;
+}

@@ -447,7 +447,7 @@ async function showOrderStatus() {
         return;
     }
 
-    const orderId = order.orderId || order.id; // Một số API trả về id thay vì orderId
+    const orderId = order.orderId || order.id;
 
     if (!orderId) {
         content.innerHTML = `<p style="color:red;">Order không có ID hợp lệ.</p>`;

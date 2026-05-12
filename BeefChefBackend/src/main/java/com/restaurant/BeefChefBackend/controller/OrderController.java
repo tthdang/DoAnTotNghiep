@@ -108,7 +108,7 @@ public class OrderController {
         try{
             return ApiResponse.<OrderResponse>builder()
                     .result(orderService.updateOrderStatus(orderId, request))
-                    .message("Update status Order successfully!")
+                    .message("Cập nhật trạng thái order thành công!")
                     .build();
         } catch (Exception e){
             return ApiResponse.<OrderResponse>builder()

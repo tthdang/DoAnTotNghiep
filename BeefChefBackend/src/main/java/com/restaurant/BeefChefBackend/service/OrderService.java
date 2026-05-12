@@ -88,66 +88,7 @@ public class OrderService {
                 .promotionCode(orders.getPromotion() != null ? orders.getPromotion().getCode() : null)
                 .build();
     }
-//
-//    //create order moi
-//    public OrderResponse createOrder(OrderRequest request){
-//        Tables tables = tableRepository.findById(request.getTableId()).orElseThrow(
-//                () -> new RuntimeException("Table not found!")
-//        );
-//
-//        User user = userRepository.findById(request.getUserId()).orElseThrow(
-//                () -> new RuntimeException("User not found!")
-//        );
-//
-//        Orders orders = new Orders();
-//        orders.setTable(tables);
-//        orders.setUser(user);
-//        orders.setCreatedAt(LocalDateTime.now());
-//        orders.setOrderStatus(OrderStatus.ORDERING);
-//        orders.setOrderTotal(BigDecimal.ZERO);
-//        Orders save = orderRepository.save(orders);
-//
-//        return toResponse(save);
-//    }
-//
-//    //update order
-//    public OrderResponse updateOrder(Integer orderId, AddItemsToOderRequest request){
-//        Orders orders = orderRepository.findById(orderId).orElseThrow(
-//                () -> new RuntimeException("Order not found!")
-//        );
-//
-//        if(orders.getOrderStatus() == OrderStatus.PAID){
-//            throw new IllegalArgumentException("Không thể thêm vì đã kết thúc!");
-//        }
-//
-//        BigDecimal addedTotal = BigDecimal.ZERO;
-//        List<OrderItemRequest> items = request.getItems();
-//
-//        for (int i = 0; i <items.size(); i++){
-//            OrderItemRequest itemRequest = items.get(i);
-//            //Check san pham
-//            Products products = productRepository.findById(itemRequest.getProductId()).orElseThrow(
-//                    () -> new RuntimeException("Product not found by id: " + itemRequest.getProductId())
-//            );
-//
-//            OrderItems orderItems = new OrderItems();
-//            orderItems.setOrder(orders);
-//            orderItems.setProduct(products);
-//            orderItems.setOrderItemQuantity(itemRequest.getQuantity());
-//            orderItems.setOrderItemPrice(products.getProductPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
-//            orderItems.setOrderItemStatus(OrderItemStatus.PENDING);
-//
-//            orders.getItem().add(orderItems);
-//            addedTotal = addedTotal.add(orderItems.getOrderItemPrice());
-//
-//        }
-//
-//        //update lai tong tien
-//        orders.setOrderTotal(orders.getOrderTotal().add(addedTotal));
-//        Orders update = orderRepository.save(orders);
-//        return toResponse(update);
-//
-//    }
+
 
     //create Order
     @Transactional
@@ -181,7 +122,10 @@ public class OrderService {
         order.setItem(orderItems);
         order.setOrderTotal(BigDecimal.ZERO);
         order.setDiscountAmount(BigDecimal.ZERO);
+
         order.setFinalAmount(BigDecimal.ZERO);
+        order.setUserRankDiscount(BigDecimal.ZERO);
+        order.setDiscountAmount(BigDecimal.ZERO);
 
 
         Orders save = orderRepository.save(order);
@@ -265,6 +209,7 @@ public class OrderService {
 
         // Cập nhật tổng tiền order
         order.setOrderTotal(order.getOrderTotal().add(addTotal));
+        recalculateAmounts(order);
         order.setOrderStatus(OrderStatus.ORDERING);
 
         Orders updatedOrder = orderRepository.save(order);
@@ -323,9 +268,12 @@ public class OrderService {
                 .multiply(BigDecimal.valueOf(orderItem.getOrderItemQuantity()));
 
         order.setOrderTotal(order.getOrderTotal().subtract(itemTotal));
+
         if (order.getOrderTotal().compareTo(BigDecimal.ZERO) < 0) {
             order.setOrderTotal(BigDecimal.ZERO);
         }
+
+        recalculateAmounts(order);
 
         Orders save = orderRepository.save(order);
 
@@ -344,19 +292,22 @@ public class OrderService {
             throw new IllegalStateException("Order chưa được hoàn thành tât cả các món thì không được thanh toán!");
         }
 
+//        BigDecimal finalAmount = order.getFinalAmount();
+//
+//        if (finalAmount == null) {
+//            // Trường hợp chưa áp dụng promotion nào
+//            BigDecimal rankDiscount = promotionService.calculateRankDiscount(order);
+//            finalAmount = order.getOrderTotal()
+//                    .subtract(rankDiscount)
+//                    .max(BigDecimal.ZERO);
+//
+//            order.setUserRankDiscount(rankDiscount);
+//            order.setDiscountAmount(BigDecimal.ZERO);
+//            order.setFinalAmount(finalAmount);
+//        }
+
+        recalculateAmounts(order);
         BigDecimal finalAmount = order.getFinalAmount();
-
-        if (finalAmount == null) {
-            // Trường hợp chưa áp dụng promotion nào
-            BigDecimal rankDiscount = promotionService.calculateRankDiscount(order);
-            finalAmount = order.getOrderTotal()
-                    .subtract(rankDiscount)
-                    .max(BigDecimal.ZERO);
-
-            order.setUserRankDiscount(rankDiscount);
-            order.setDiscountAmount(BigDecimal.ZERO);
-            order.setFinalAmount(finalAmount);
-        }
 
         order.setOrderStatus(OrderStatus.PAID);
         order.setPaidAt(LocalDateTime.now());
@@ -385,6 +336,36 @@ public class OrderService {
 
         return toResponse(saved);
     }
+    // tính giảm giá
+    private void recalculateAmounts(Orders order) {
+
+        BigDecimal total = order.getOrderTotal() != null
+                ? order.getOrderTotal()
+                : BigDecimal.ZERO;
+
+        // Giảm giá rank
+        BigDecimal rankDiscount =
+                promotionService.calculateRankDiscount(order);
+
+        // Giảm giá promotion
+        BigDecimal promoDiscount =
+                order.getDiscountAmount() != null
+                        ? order.getDiscountAmount()
+                        : BigDecimal.ZERO;
+
+        // Final amount
+        BigDecimal finalAmount = total
+                .subtract(rankDiscount)
+                .subtract(promoDiscount);
+
+        // Không âm
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            finalAmount = BigDecimal.ZERO;
+        }
+
+        order.setUserRankDiscount(rankDiscount);
+        order.setFinalAmount(finalAmount);
+    }
 
     // Lấy order theo id bàn
     public Orders getCurrentOrderByTableId(Integer tableId) {
@@ -406,6 +387,11 @@ public class OrderService {
             orderRepository.save(order);
 
         }
+    }
+
+    public void recalculateOrder(Orders order){
+        recalculateAmounts(order);
+        orderRepository.save(order);
     }
 
 

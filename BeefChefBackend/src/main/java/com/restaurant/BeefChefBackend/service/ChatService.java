@@ -32,6 +32,21 @@ public class ChatService {
 
         String message = request.getMessage().toLowerCase();
 
+        //chào
+        if (message.contains("Chào") || message.contains("Hi") || message.contains("Hello")){
+            String data = hello();
+            return formatWithAI(data, request.getMessage());
+        }
+
+        // hướng dẫn gọi món
+        if (message.contains("hướng dẫn") || message.contains("cách") || message.contains("các bước") || message.contains("giúp") || message.contains("help") || message.contains("gọi món")){
+            String data = help();
+            return formatWithAI(data, request.getMessage());
+        }
+
+        //món hôm nay có
+
+
 
         //Top 5 món
         if (message.contains("top") || message.contains("nổi bật") || message.contains("những món") || (message.contains("ngon nhất") && message.contains("danh sách")) || (message.contains("nên thử") && message.contains("danh sách")) ) {
@@ -39,7 +54,7 @@ public class ChatService {
             List<Products> top5 = productRepository.findTop5ByOrderByProductSoldDesc();
 
             String data = top5.stream()
-                    .map(p -> "** " + p.getProductName() + "** ( Đã được gọi: " + p.getProductSold() + " lần). " + p.getProductDescription() + " - Giá: " + p.getProductPrice() + " VNĐ\t")
+                    .map(p -> "** " + p.getProductName() + "** ( Đã được gọi: " + p.getProductSold() + " lần). " + p.getProductDescription() + " - Giá: " + p.getProductPrice() + " VNĐ \n")
                     .collect(Collectors.joining(","));
 
             return formatWithAI(
@@ -101,7 +116,7 @@ public class ChatService {
 //                .call()
 //                .content();
 
-        return "Xin lỗi, tôi chỉ có thể tư vấn dựa trên menu của nhà hàng BeefChef.";
+        return "Xin lỗi, mình chỉ có thể tư vấn cho bạn dựa trên menu của nhà hàng BeefChef.";
     }
 
     //gợi ý theo combo
@@ -174,7 +189,7 @@ public class ChatService {
                     .collect(Collectors.toList());
 
             for (Products p : remaining) {
-                if (combo.size() >= people + 2) break;   // Ví dụ: 3 người thì tối đa ~5 món
+                if (combo.size() >= people + 2) break;   // giới hạn tổng số món
 
                 BigDecimal newTotal = total.add(p.getProductPrice());
                 if (newTotal.compareTo(budget.multiply(BigDecimal.valueOf(1.35))) <= 0) {
@@ -229,6 +244,29 @@ public class ChatService {
         if (message.contains("4")) return 4;
 
         return 2;
+    }
+
+    //hướng dẫn gọi món
+    private String help(){
+        String data = """
+                Mình sẽ hướng dẫn bạn cách gọi món nhé! \n
+                1. Lựa món bạn muốn gọi và nhấn nút **"Chọn"**. \n
+                2. Sau khi chọn món xong thì nhấn vào giỏ hàng ở bên dưới khung chat. \n
+                3. Chỉnh sửa số lượng bằng các nút "+" để thêm số lượng và "-" để giảm số lượng \n
+                4. Tiếp theo nhấn nút **"Xác nhận gọi món"** \n
+                5. Nhấn **"Trạng thái món ăn"** ở phía bên phải hướng lên trên để xem trạng thái món ăn nhé! \n
+                Nếu bạn có thắc mắc gì về menu thì cứ hỏi mình nha!\n
+                Chúc bạn có bữa ăn thật ngon miệng!
+                
+                """;
+        return data;
+    }
+
+    private String hello(){
+        String data = """
+                Xin chào! Mình là Beef AI 🤖 của nhà hàng, mình có thể giúp gì cho bạn?
+                """;
+        return data;
     }
 
     // dùng AI để viết lại cho tự nhiên

@@ -236,13 +236,20 @@ document.addEventListener('click', async function (e) {
                     body: JSON.stringify({ orderStatus: 'PAID' })
                 });
 
-                if (res.ok) {
-                    alert("Cập nhật thanh toán thành công!");
-                    loadOrderDetail();
+                const data = await res.json();
+                alert(data.message);
 
-                } else {
-                    alert("Cập nhật thanh toán thất bại!");
+                if(res.ok){
+                    loadOrderDetail();
                 }
+
+                // if (res.ok) {
+                //     alert("Cập nhật thanh toán thành công!");
+                //     loadOrderDetail();
+
+                // } else {
+                //     alert("Cập nhật thanh toán thất bại!");
+                // }
             } catch (err) {
                 alert("Lỗi kết nối!");
             }
@@ -287,7 +294,7 @@ document.addEventListener('click', async function (e) {
                 return;
             }
 
-            alert("Hoá đơn đã được tải về thành công!");
+            alert("Xuất hoá đơn thành công!");
 
         } catch (error) {
             console.error("Lỗi tải hoá đơn:", error);
