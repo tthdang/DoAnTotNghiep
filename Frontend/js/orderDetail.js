@@ -1,6 +1,18 @@
 
 let currentOrder = null;
 
+function showAlert2(options) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            confirmButtonText: 'OK',
+            ...options
+        });
+        return;
+    }
+
+    alert(options.text || options.title || '');
+}
+
 async function loadOrderDetail() {
     const urlParams = new URLSearchParams(window.location.search);
     const orderId = urlParams.get('orderId');
@@ -263,7 +275,11 @@ document.addEventListener('click', async function (e) {
 
         // Chỉ cho xuất hoá đơn khi đã thanh toán
         if (currentOrder.orderStatus !== 'PAID') {
-            alert("Chỉ có thể xuất hoá đơn khi đơn hàng đã thanh toán!");
+            showAlert2({
+                icon: 'warning',
+                title: 'Chưa thể xuất hoá đơn',
+                text: 'Chỉ có thể xuất hoá đơn khi đơn hàng đã thanh toán!'
+            });
             return;
         }
 
@@ -284,21 +300,37 @@ document.addEventListener('click', async function (e) {
             });
 
             if (response.status === 404) {
-                alert("Không tìm thấy đơn hàng!");
+                showAlert2({
+                    icon: 'error',
+                    title: 'Không tìm thấy đơn hàng',
+                    text: 'Vui lòng kiểm tra lại thông tin đơn hàng.'
+                });
                 return;
             }
 
             if (!response.ok) {
                 const errorText = await response.text();
-                alert("Lỗi khi tạo hoá đơn: " + errorText);
+                showAlert2({
+                    icon: 'error',
+                    title: 'Lỗi khi tạo hoá đơn',
+                    text: errorText || 'Vui lòng thử lại sau.'
+                });
                 return;
             }
 
-            alert("Xuất hoá đơn thành công!");
+            showAlert2({
+                icon: 'success',
+                title: 'Xuất hoá đơn thành công!',
+                text: 'Hoá đơn PDF đã được tạo thành công.'
+            });
 
         } catch (error) {
             console.error("Lỗi tải hoá đơn:", error);
-            alert("Có lỗi xảy ra khi tải hoá đơn. Vui lòng thử lại!");
+            showAlert2({
+                icon: 'error',
+                title: 'Không thể tải hoá đơn',
+                text: 'Có lỗi xảy ra khi tải hoá đơn. Vui lòng thử lại!'
+            });
         }
         finally {
             // Khôi phục nút

@@ -79,7 +79,13 @@ async function loadPromotion() {
             searchable: true,
             sortable: true,
             perPage: 10,
-            perPageSelect: [5, 10, 20, 50]
+            perPageSelect: [5, 10, 20, 50],
+            labels: {
+                placeholder: "Tìm kiếm...",
+                perPage: " mã khuyến mãi mỗi trang",
+                noRows: "Không có dữ liệu",
+                info: "Hiển thị {start} đến {end} của {rows} mã khuyến mãi"
+            }
         });
 
     } catch (error) {

@@ -11,7 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
     <link href="css/report.css" rel="stylesheet" />
-    
+
 </head>
 
 <body class="sb-nav-fixed">
@@ -41,7 +41,11 @@
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a class="dropdown-item" href="homePage.html">Logout</a></li>
+                    <li><a class="dropdown-item" href="#"
+                            onclick="localStorage.clear(); window.location.href='homePage.html';">
+                            Đăng xuất
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>
@@ -106,7 +110,7 @@
                         </a>
                     </div>
                 </div>
-                
+
             </nav>
         </div>
         <div id="layoutSidenav_content">

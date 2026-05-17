@@ -7,6 +7,7 @@ import com.restaurant.BeefChefBackend.enums.BatchStatus;
 import com.restaurant.BeefChefBackend.repository.IngredientBatchRepository;
 import com.restaurant.BeefChefBackend.repository.IngredientRepository;
 import com.restaurant.BeefChefBackend.repository.IngredientUsageRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -104,7 +105,8 @@ public class IngredientBatchService {
         return BatchStatus.AVAILABLE;
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") //mỗi ngày 00:00
+//    @Scheduled(cron = "0 0 0 * * ?") //mỗi ngày 00:00
+    @PostConstruct
     @Transactional
     public void updateBatchStatusDaily() {
         List<IngredientBatch> batches = ingredientBatchRepository.findAll();
@@ -221,6 +223,12 @@ public class IngredientBatchService {
                 }
 
                 ingredientBatchRepository.save(batch);
+                IngredientUsage usage = new IngredientUsage();
+                usage.setOrderItem(orderItem);
+                usage.setBatch(batch);
+                usage.setQuantityUsed(canDeduct);
+
+                ingredientUsageRepository.save(usage);
             }
         }
 

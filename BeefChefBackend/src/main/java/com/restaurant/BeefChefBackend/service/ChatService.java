@@ -33,7 +33,7 @@ public class ChatService {
         String message = request.getMessage().toLowerCase();
 
         //chào
-        if (message.contains("Chào") || message.contains("Hi") || message.contains("Hello")){
+        if (message.contains("chào") || message.contains("hi") || message.contains("hello")){
             String data = hello();
             return formatWithAI(data, request.getMessage());
         }

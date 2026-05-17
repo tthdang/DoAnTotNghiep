@@ -9,6 +9,7 @@ import com.restaurant.BeefChefBackend.enums.DiscountType;
 import com.restaurant.BeefChefBackend.enums.PromotionStatus;
 import com.restaurant.BeefChefBackend.enums.PromotionType;
 import com.restaurant.BeefChefBackend.repository.*;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -157,9 +158,10 @@ public class PromotionService {
 
     //ap dung khuyen mai
     public void applyPromotion(Integer orderId, String code) {
-        Promotion promotion = promotionRepository.findByCode(code).orElseThrow(
-                () -> new IllegalArgumentException("Không tìm thấy mã khuyến mãi!")
-        );
+        Promotion promotion = promotionRepository.findValidPromotionByCode(code, LocalDate.now(), PromotionStatus.AVAILABLE)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Mã khuyến mãi không tồn tại, đã hết hạn hoặc đã hết lượt sử dụng!"
+                ));
 
         if (promotion.getStatus() == PromotionStatus.OUT_OF_STOCK) {
             throw new IllegalArgumentException("Mã khuyến mãi không hoạt động!");
@@ -274,22 +276,22 @@ public class PromotionService {
         orderRepository.save(order);
     }
 
-    public BigDecimal applyRankDiscount(Orders orders) {
-        BigDecimal total = orders.getOrderTotal();
-
-        if (orders.getUser() == null || orders.getUser().getRank() == null) {
-            return BigDecimal.ZERO;
-        }
-
-        BigDecimal percent = orders.getUser().getRank().getDiscount();
-
-        if (percent == null || percent.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return total.multiply(percent)
-                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-    }
+//    public BigDecimal applyRankDiscount(Orders orders) {
+//        BigDecimal total = orders.getOrderTotal();
+//
+//        if (orders.getUser() == null || orders.getUser().getRank() == null) {
+//            return BigDecimal.ZERO;
+//        }
+//
+//        BigDecimal percent = orders.getUser().getRank().getDiscount();
+//
+//        if (percent == null || percent.compareTo(BigDecimal.ZERO) <= 0) {
+//            return BigDecimal.ZERO;
+//        }
+//
+//        return total.multiply(percent)
+//                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+//    }
 
     // Tính giảm giá theo hạng thành viên
     public BigDecimal calculateRankDiscount(Orders order) {
@@ -336,4 +338,25 @@ public class PromotionService {
         return BigDecimal.ZERO;
     }
 
+    @PostConstruct
+    private void updatePromotionStatus(){
+        List<Promotion> promotions = promotionRepository.findAll();
+        for (Promotion promotion : promotions) {
+            promotion.setStatus(calStatus(promotion));
+        }
+        promotionRepository.saveAll(promotions);
+    }
+
+    private PromotionStatus calStatus(Promotion promotion) {
+        LocalDate today = LocalDate.now();
+        // số lần sử dụng
+        if (promotion.getUsageLimit() <= promotion.getUsedCount()) {
+            return PromotionStatus.OUT_OF_STOCK;
+        }
+        //hết hạn
+        if (promotion.getEndDate().isBefore(today)) {
+            return PromotionStatus.OUT_OF_STOCK;
+        }
+        return PromotionStatus.AVAILABLE;
+    }
 }

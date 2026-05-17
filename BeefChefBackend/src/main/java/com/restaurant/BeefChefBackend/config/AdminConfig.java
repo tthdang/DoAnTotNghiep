@@ -28,12 +28,12 @@ public class AdminConfig {
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository){
         return args -> {
-            if(userRepository.findByUserPhone("admin").isEmpty()){
+            if(userRepository.findByUserPhone("admin12345").isEmpty()){
                 var role = new HashSet<String>();
                 role.add(Roles.ADMIN.name());
                 Ranks rank = rankService.getRankById(5);
                 User admin = User.builder()
-                        .userPhone("admin@12345")
+                        .userPhone("admin12345")
                         .userPassword(passwordEncoder.encode("admin"))
                         .userRole(role)
                         .userPoint(100000L)
@@ -42,7 +42,7 @@ public class AdminConfig {
                 userRepository.save(admin);
                 log.warn("Admin user has been created with default password: admin. PLease change it!");
             }
-            if(userRepository.findByUserPhone("chef123").isEmpty()){
+            if(userRepository.findByUserPhone("chef@12345").isEmpty()){
                 var role = new HashSet<String>();
                 role.add(Roles.CHEF.name());
                 Ranks rank = rankService.getRankById(5);

@@ -15,9 +15,11 @@ public class IngredientUsage {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "orderItemId")
     private OrderItems orderItem;
 
     @ManyToOne
+    @JoinColumn(name = "batchId")
     private IngredientBatch batch;
 
     private double quantityUsed;

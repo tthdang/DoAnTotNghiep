@@ -58,7 +58,13 @@ async function loadIngredient() {
             searchable: true,
             sortable: true,
             perPage: 10,
-            perPageSelect: [5, 10, 20, 50]
+            perPageSelect: [5, 10, 20, 50],
+            labels: {
+                placeholder: "Tìm kiếm tên nguyên liệu...",
+                perPage: " nguyên liệu mỗi trang",
+                noRows: "Không có dữ liệu",
+                info: "Hiển thị {start} đến {end} của {rows} nguyên liệu"
+            }
         });
 
     } catch (error) {

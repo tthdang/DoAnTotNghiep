@@ -18,7 +18,8 @@
 
   <!-- NAV -->
   <nav>
-    <a class="nav-logo" href="homePage.html"><span>Beef</span>Chef</a>
+    
+    <a class="nav-logo" href="#" onclick="localStorage.clear(); window.location.href='homePage.html';"><span>Beef</span>Chef</a>
     <ul class="nav-links">
       <li><a href="#menu">Thực đơn</a></li>
       <li><a href="#" onclick="showOrderStatus()">Trạng thái món ăn</a></li>
@@ -79,7 +80,7 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
   <script src="js/order.js"></script>
-  
+
 
   <!-- ORDER STATUS MODAL -->
   <div class="modal" id="orderStatusModal">

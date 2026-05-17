@@ -212,7 +212,7 @@ async function loadTop5Dishes() {
 
         // signatureDishes = [
         //     { rank: 1, name: "Australian Ribeye Steak", desc: "Thăn ngoại Úc 300g...", price: 389000, image: "https://via.placeholder.com/300x210?text=Ribeye" },
-            
+
         // ];
         renderSignatureDishes();
     }
@@ -252,8 +252,8 @@ function renderSignatureDishes() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Page loaded");
 
-    loadAllData();        
-    loadTop5Dishes();     
+    loadAllData();
+    loadTop5Dishes();
 
     // Ngày đặt bàn
     const bkDate = document.getElementById('bk-date');
@@ -262,14 +262,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Kiểm tra đăng nhập
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
+
+    const authButtons = document.getElementById("authButtons");
+    const userMenu = document.getElementById("userMenu");
+    const welcomeUser = document.getElementById("welcomeUser");
+
     if (token && username) {
-        const authButtons = document.getElementById("authButtons");
-        const userMenu = document.getElementById("userMenu");
         if (authButtons) authButtons.style.display = "none";
-        if (userMenu) {
-            userMenu.style.display = "flex";
-            document.getElementById("welcomeUser").innerText = "Xin chào, " + username;
-        }
+        if (userMenu) userMenu.style.display = "flex";
+        if (welcomeUser) welcomeUser.innerText = "Xin chào, " + username;
+    } else {
+        if (authButtons) authButtons.style.display = "flex";
+        if (userMenu) userMenu.style.display = "none";
+        if (welcomeUser) welcomeUser.innerText = "";
     }
 });
 
@@ -284,7 +289,17 @@ function filterMenu(cat, el) {
 }
 
 function logout() {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+
+    const authButtons = document.getElementById("authButtons");
+    const userMenu = document.getElementById("userMenu");
+    const welcomeUser = document.getElementById("welcomeUser");
+
+    if (authButtons) authButtons.style.display = "flex";
+    if (userMenu) userMenu.style.display = "none";
+    if (welcomeUser) welcomeUser.innerText = "";
+
     window.location.href = "homePage.html";
 }
 

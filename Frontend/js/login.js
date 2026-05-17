@@ -1,21 +1,29 @@
 document.getElementById("loginForm").addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const userPhone = document.getElementById("inputPhone").value;
+    const userPhone = document.getElementById("inputPhone").value.trim();
     const userPassword = document.getElementById("inputPassword").value;
 
     //Kiểm tra phone và password không được bỏ trống
-    if(!userPhone){
+    if (!userPhone) {
         alert("Số điện thoại không được bỏ trống!");
         document.getElementById('inputPhone').focus();
         return;
     }
-    if(!userPassword){
+
+    //check sl != 10
+    if (userPhone !== "chef@12345" && userPhone !== "admin12345" && !/^\d{10}$/.test(userPhone)) {
+        alert("Số điện thoại phải gồm đúng 10 chữ số!");
+        document.getElementById('inputPhone').focus();
+        return;
+    }
+
+    if (!userPassword) {
         alert("Mật khẩu không được bỏ trống!");
         document.getElementById('inputPassword').focus();
         return;
     }
-    
+
 
 
     try {
@@ -49,13 +57,13 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             window.location.href = "index.html";
         }
 
-        if(result.role == "USER"){
+        if (result.role == "USER") {
             alert("Đăng nhập thành công!");
             // chuyển sang giao diện user
             window.location.href = "homePage.html";
         }
 
-        if(result.role == "CHEF"){
+        if (result.role == "CHEF") {
             alert("Đăng nhập thành công!");
             // chuyển sang giao diện user
             window.location.href = "orderChef.html";

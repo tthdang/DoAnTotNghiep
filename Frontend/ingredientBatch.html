@@ -7,10 +7,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Products</title>
+    <title>Lô nguyên liệu</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        #tong {
+            padding: 20px 0px 0px 0px;
+        }
+
+        .badge {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge span {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            transition: 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #ffc107, #ffca2c);
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        }
+    </style>
 </head>
 
 <body class="sb-nav-fixed">
@@ -40,7 +79,12 @@
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a class="dropdown-item" href="homePage.html">Đăng xuất</a></li>
+                    <li>
+                        <a class="dropdown-item" href="#"
+                            onclick="localStorage.clear(); window.location.href='homePage.html';">
+                            Đăng xuất
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>
@@ -112,21 +156,21 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <h1 class="mt-4">Nguyên liệu</h1>
+                    <h1 class="mt-4">Lô nguyên liệu</h1>
                     <ol class="breadcrumb mb-4">
-                        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Nguyên liệu</li>
+                        <li class="breadcrumb-item"><a href="index.html">BeefChef</a></li>
+                        <li class="breadcrumb-item active">Lô nguyên liệu</li>
                     </ol>
                     <div class="card mb-4">
                         <div class="card-body">
-                            Danh sách thông tin nguyên liệu của nhà hàng BeefChef
+                            Danh sách thông tin lô nguyên liệu của nhà hàng BeefChef
                             <!-- <a target="_blank" href="https://datatables.net/">official DataTables documentation</a> -->
                             .
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="createIngredient.html" class="btn btn-primary">
-                            Thêm nguyên liệu
+                        <a href="createBatch.html" class="btn btn-primary">
+                            Thêm lô nguyên liệu
                         </a>
                         </br>
                     </div>
@@ -134,9 +178,17 @@
                     <div class="card mb-4">
 
                         <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            Danh sách nguyên liệu
+                            <i class="fas fa-table me-1"></i> Danh sách lô nguyên liệu
+
+                            <div id="tong" class="mb-3">
+                                <span class="badge bg-success">Còn hạn: <span id="countAvailable">0</span></span>
+                                <span class="badge bg-warning text-dark">Sắp hết hạn: <span
+                                        id="countNear">0</span></span>
+                                <span class="badge bg-danger">Hết hạn: <span id="countExpired">0</span></span>
+                            </div>
                         </div>
+
+
 
                         <div class="card-body">
                             <table id="datatablesSimple">
@@ -144,13 +196,15 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Tên nguyên liệu</th>
-                                        <th>Khối lượng còn lại</th>
-                                        <th>Định lượng</th>
-                                        <th>Hành động</th>
+                                        <th>Số lượng nhập</th>
+                                        <th>Số lượng còn lại</th>
+                                        <th>Ngày nhập</th>
+                                        <th>Ngày hết hạn</th>
+                                        <th>Giá tiền</th>
+                                        <th>Trạng thái</th>
                                     </tr>
                                 </thead>
-                                <!-- Ds nguyên liệu-->
-                                <tbody id="ingredientTableBody">
+                                <tbody id="batchTableBody">
 
                                 </tbody>
                             </table>
@@ -178,7 +232,7 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
         crossorigin="anonymous"></script>
     <!-- <script src="js/datatables-simple-demo.js"></script> -->
-    <script src="js/ingredient.js"></script>
+    <script src="js/batch.js"></script>
 </body>
 
 </html>

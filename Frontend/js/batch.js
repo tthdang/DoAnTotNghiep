@@ -70,7 +70,13 @@ async function loadBatch() {
             searchable: true,
             sortable: true,
             perPage: 10,
-            perPageSelect: [5, 10, 20, 50]
+            perPageSelect: [5, 10, 20, 50],
+            labels: {
+                placeholder: "Tìm kiếm...",
+                perPage: " lô nguyên liệu mỗi trang",
+                noRows: "Không có dữ liệu",
+                info: "Hiển thị {start} đến {end} của {rows} lô nguyên liệu"
+            }
         });
 
         document.getElementById("countAvailable").innerText = countAvailable;

@@ -15,7 +15,7 @@ let dataTableInstance = null;
 
 async function loadProducts() {
     const tableBody = document.getElementById("productTableBody");
-    
+
     //
     if (!tableBody) {
         console.warn("Không tìm thấy #productTableBody, bỏ qua loadProducts");
@@ -25,7 +25,7 @@ async function loadProducts() {
     try {
         const response = await fetch("http://localhost:8081/beefchef/products");
         if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu");
-        
+
         const data = await response.json();
         const list = data.result;
 
@@ -69,7 +69,14 @@ async function loadProducts() {
             searchable: true,
             sortable: true,
             perPage: 10,
-            perPageSelect: [5, 10, 20, 50]
+            perPageSelect: [5, 10, 20, 50],
+
+            labels: {
+                placeholder: "Tìm kiếm món ăn...",
+                perPage: " món mỗi trang",
+                noRows: "Không có dữ liệu",
+                info: "Hiển thị {start} đến {end} của {rows} món ăn"
+            }
         });
 
     } catch (error) {
@@ -120,5 +127,5 @@ function getStatusText(status) {
 // Sửa sản phẩm 
 function editProduct(id) {
     window.location.href = `updateProduct.html?id=${id}`;
-}   
+}
 
